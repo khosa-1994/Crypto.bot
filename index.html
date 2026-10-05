@@ -76,16 +76,18 @@ h2{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size
 .round b{font-family:"Pixelify Sans","Courier New",monospace}
 .think{background:var(--bg);border:1px dashed var(--line);border-radius:6px;padding:8px 10px;margin:6px 0;font-size:13px;color:var(--muted)}
 .think.on{border-color:var(--screen);border-style:solid}
+.signin{width:100%;padding:14px;margin-bottom:10px;font-size:16px;font-weight:bold;background:var(--screen);color:#fff;border:0;border-radius:6px;cursor:pointer;font-family:"Atkinson Hyperlegible",sans-serif}
+.signin.done{background:var(--up);cursor:default}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Crypto Bot Team</h1>
-  <p class="sub">Asli AI — koi API key nahi. Pehli dafa Puter account se sign-in (free, 10 second), phir AI hukm samajh kar khud coins deta hai.</p>
+  <p class="sub">Asli AI — koi API key nahi. Pehle Sign In karein (ek dafa), phir AI hukm samajh kar khud coins deta hai.</p>
 
   <details class="cfg" id="cfg">
     <summary>Setup & info</summary>
-    <p><b>AI:</b> Puter.js (free, browser mein chalti hai). Pehli dafa popup aayega — Google ya email se sign-in karein.</p>
+    <p><b>AI:</b> Puter.js (free, browser mein chalti hai). Pehli dafa Sign In button dabayein — Google ya email se login karein.</p>
     <label for="model">AI model</label>
     <select id="model">
       <option value="">Default (jo Puter de)</option>
@@ -107,6 +109,7 @@ h2{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size
     <label for="task">Bots ko hukm dein</label>
     <textarea id="task" placeholder="Misal: Pump se pehle wale coins do jisme volume acha ho"></textarea>
     <div class="chips" id="chips"></div>
+    <div id="signInSlot"></div>
     <div class="row">
       <button class="go" id="go">Hukm bhejo</button>
       <button class="stop" id="stop" disabled>Roko</button>
@@ -330,4 +333,406 @@ const RULES = {
   breakout_20:(m,v)=>m.breakout_20===v,
   near_20_high_pct:(m,v)=>m.dist_to_20_high_pct<=v && m.dist_to_20_high_pct>=0,
   near_20_low_pct:(m,v)=>m.dist_from_20_low_pct<=v,
-  change24h_
+  change24h_min:(m,v)=>m.change24h_pct>=v, change24h_max:(m,v)=>m.change24h_pct<=v,
+  funding_max_pct:(m,v)=>m.funding_pct==null||m.funding_pct<=v, funding_min_pct:(m,v)=>m.funding_pct!=null&&m.funding_pct>=v,
+  hammer:(m,v)=>m.hammer_last_closed===v,
+  ema_cross_within:(m,v)=>m.candles_since_ema9_cross_up_ema21!=null && m.candles_since_ema9_cross_up_ema21<=v,
+  max_dist_from_ema21_pct:(m,v)=>Math.abs(m.dist_from_ema21_pct)<=v,
+  max_risk_pct:(m,v)=>m.risk_pct<=v
+};
+function setProgress(p){ bar.style.width = (p*100) + "%"; }
+
+async function tool_scan(inp){
+  const tf = ["15m","1h","4h","1d","1w"].includes(inp.timeframe) ? inp.timeframe : "4h";
+  const minV = inp.min_volume_usd ?? 5e6, maxC = Math.min(inp.max_coins ?? 150, 400), rules = inp.rules || {};
+  await goDesk(mgr); say(mgr,"Binance se coins la rahi hoon…",0);
+  const tk = await tickers(), now = Date.now();
+  let uni = tk.filter(t => t.symbol.endsWith("USDT") && !t.symbol.includes("_") && !STABLE.test(t.symbol)
+    && (!t.closeTime || now-t.closeTime < 2*3600e3) && +t.quoteVolume >= minV)
+    .sort((a,b)=>b.quoteVolume-a.quoteVolume).slice(0, maxC);
+  say(mgr, uni.length + " coins team ko de diye", 3000);
+  await goDesk(risk); setState(risk,"work"); say(risk,"Funding check…",0);
+  const fr = await fundingAll();
+  await Promise.all([goDesk(trd), goDesk(vol)]); setState(trd,"work"); setState(vol,"work");
+  const all=[]; let done=0;
+  for(let i=0;i<uni.length;i+=10){
+    if(controller.signal.aborted) throw new DOMException("stopped","AbortError");
+    const b=uni.slice(i,i+10);
+    const res = await Promise.allSettled(b.map(t=>klines(t.symbol, tf)));
+    res.forEach((r,j)=>{ if(r.status==="fulfilled"){ const m=metrics(b[j].symbol, r.value, b[j], fr[b[j].symbol] ?? null); if(m) all.push(m); } else if(r.reason?.name==="AbortError") throw r.reason; });
+    done+=b.length; setProgress(done/uni.length);
+    say(trd,"Charts "+done+"/"+uni.length,0); say(vol, all.filter(m=>m.volume_ratio>=2).length+" volume spikes",0);
+    await sleep(180);
+  }
+  const funnel = {}; Object.keys(rules).forEach(k => { if(RULES[k]) funnel[k] = all.filter(m => RULES[k](m, rules[k])).length; });
+  const unknown = Object.keys(rules).filter(k => !RULES[k]);
+  let hits = all.filter(m => Object.entries(rules).every(([k,v]) => !RULES[k] || RULES[k](m,v)));
+  say(risk, hits.length+" coins rules pass", 0);
+  const sortBy = inp.sort_by || "score";
+  hits.sort((a,b)=> sortBy==="rsi_low" ? a.rsi-b.rsi : (b[sortBy] ?? b.score) - (a[sortBy] ?? a.score));
+  [trd,vol,risk].forEach(a=>{ setState(a,"done"); say(a,"Mukammal ✓"); });
+  log("Scan " + tf.toUpperCase() + ": " + all.length + " check, " + hits.length + " pass.");
+  return {timeframe:tf, scanned:all.length, matched:hits.length, rule_pass_counts:funnel, unknown_rules_ignored:unknown,
+    results: hits.slice(0, Math.min(inp.limit ?? 8, 20))};
+}
+async function tool_coin(inp){
+  const sym = String(inp.symbol||"").toUpperCase().replace(/[^A-Z0-9]/g,"").replace(/(USDT)?$/,"USDT");
+  const tf = inp.timeframe || "4h";
+  await goDesk(trd); setState(trd,"work"); say(trd, sym.replace("USDT","") + " ka chart…",0);
+  const tk = (await tickers()).find(t=>t.symbol===sym);
+  if(!tk){ setState(trd,"done"); return {error: sym + " Binance par nahi mila"}; }
+  const fr = await fundingAll(); const m = metrics(sym, await klines(sym, tf), tk, fr[sym] ?? null);
+  setState(trd,"done"); say(trd,"Mukammal ✓");
+  return {timeframe:tf, ...m};
+}
+async function tool_movers(inp){
+  await goDesk(vol); setState(vol,"work"); say(vol,"Top movers…",0);
+  const minV = inp.min_volume_usd ?? 5e6;
+  let tk = (await tickers()).filter(t=>t.symbol.endsWith("USDT") && !t.symbol.includes("_") && !STABLE.test(t.symbol) && +t.quoteVolume>=minV && (!t.closeTime || Date.now()-t.closeTime<2*3600e3));
+  const by = inp.by || "gainers";
+  tk.sort((a,b)=> by==="losers" ? a.priceChangePercent-b.priceChangePercent : by==="volume" ? b.quoteVolume-a.quoteVolume : b.priceChangePercent-a.priceChangePercent);
+  setState(vol,"done"); say(vol,"Mukammal ✓");
+  return tk.slice(0, Math.min(inp.limit ?? 10, 25)).map(t=>({symbol:t.symbol, price:+t.lastPrice, change24h_pct:+(+t.priceChangePercent).toFixed(2), volume24h_usd:Math.round(+t.quoteVolume)}));
+}
+
+/* ====================================================================
+   AI via Puter.js
+   ==================================================================== */
+function getModel(){ try { return localStorage.getItem("cbt_model_puter") || ""; } catch { return ""; } }
+document.getElementById("model").value = getModel();
+document.getElementById("model").addEventListener("change", e => {
+  try { localStorage.setItem("cbt_model_puter", e.target.value); } catch {}
+  log("Model: " + (e.target.value || "default"));
+});
+
+function errMsg(e){
+  if(e == null) return "Unknown error";
+  if(typeof e === "string") return e;
+  if(e instanceof Error) return e.message || String(e);
+  if(typeof e.message === "string" && e.message) return e.message;
+  if(e.error){ const inner = errMsg(e.error); if(inner && !/^\[object/.test(inner)) return inner; }
+  if(e.data){ const inner = errMsg(e.data); if(inner && !/^\[object/.test(inner)) return inner; }
+  if(e.response){ const inner = errMsg(e.response); if(inner && !/^\[object/.test(inner)) return inner; }
+  if(e.status) return "HTTP " + e.status + (e.statusText ? " " + e.statusText : "");
+  try { const j = JSON.stringify(e); if(j && j !== "{}") return j; } catch {}
+  const keys = Object.getOwnPropertyNames(e);
+  return "Error (" + ((e.constructor && e.constructor.name) || "object") + ") keys: " + keys.join(", ");
+}
+function extractText(resp){
+  if(resp == null) return "";
+  if(typeof resp === "string") return resp;
+  if(typeof resp.text === "string") return resp.text;
+  if(typeof resp.result === "string") return resp.result;
+  if(resp.message){
+    const c = resp.message.content;
+    if(typeof c === "string") return c;
+    if(Array.isArray(c)) return c.map(b => (typeof b === "string" ? b : (b.text||""))).join("");
+  }
+  if(resp.content){
+    const c = resp.content;
+    if(typeof c === "string") return c;
+    if(Array.isArray(c)) return c.map(b => (typeof b === "string" ? b : (b.text||""))).join("");
+  }
+  if(Array.isArray(resp)) return resp.map(extractText).join("");
+  log("Ajeeb AI response: " + (()=>{try{return JSON.stringify(resp).slice(0,300)}catch{return typeof resp}})());
+  return "";
+}
+
+/* ---------- SIGN IN ---------- */
+const signInSlot = document.getElementById("signInSlot");
+let signInBtn = null;
+function makeSignInBtn(){
+  signInBtn = document.createElement("button");
+  signInBtn.className = "signin";
+  signInBtn.type = "button";
+  signInBtn.textContent = "🔑 Pehle Sign In karein (ek dafa)";
+  signInBtn.addEventListener("click", async () => {
+    try {
+      log("Sign-in popup khul raha hai…");
+      await puter.auth.signIn();
+      log("✅ Sign in kamyab! Ab hukm bhejein.");
+      signInBtn.textContent = "✅ Sign in ho gaya — ab hukm bhejein";
+      signInBtn.classList.add("done");
+      signInBtn.disabled = true;
+    } catch(e){
+      const m = errMsg(e);
+      if(/popup_blocked|popup/i.test(m)) log("Popup block ho gaya. Chrome mein popups allow karein.", true);
+      else if(/auth_window_closed|cancel/i.test(m)) log("Aap ne sign-in cancel kar diya. Dobara try karein.", true);
+      else log("Sign in error: " + m, true);
+    }
+  });
+  signInSlot.appendChild(signInBtn);
+}
+async function checkSignIn(){
+  try {
+    if(typeof puter === "undefined" || !puter.auth){ makeSignInBtn(); return; }
+    if(typeof puter.auth.isSignedIn === "function" && puter.auth.isSignedIn()){
+      const user = (typeof puter.auth.getUser === "function") ? await puter.auth.getUser().catch(()=>null) : null;
+      log("✅ Pehle se signed in" + (user && user.username ? " (" + user.username + ")" : "") + ". Ab hukm bhej sakte hain.");
+      return;
+    }
+    makeSignInBtn();
+  } catch(e){
+    log("Sign-in check: " + errMsg(e), true);
+    makeSignInBtn();
+  }
+}
+setTimeout(checkSignIn, 800);
+
+async function aiChat(messages, {json=false} = {}){
+  if(typeof puter === "undefined" || !puter.ai)
+    throw new Error("Puter load nahi hua. Page refresh karein (internet check).");
+
+  if(puter.auth && typeof puter.auth.isSignedIn === "function" && !puter.auth.isSignedIn())
+    throw new Error("Pehle upar wala 🔑 Sign In button dabayein, phir hukm bhejein.");
+
+  const userModel = getModel();
+  const attempts = [];
+  if(userModel) attempts.push({model: userModel});
+  attempts.push({});
+  attempts.push({model: "gpt-4o-mini"});
+
+  let lastErr = null;
+  for(const opts of attempts){
+    const o = json ? {...opts, temperature:0.2} : opts;
+    try {
+      log("AI try: " + (o.model || "default"));
+      const resp = await puter.ai.chat(messages, o);
+      const text = extractText(resp);
+      if(text && text.trim()) return text;
+      lastErr = new Error("AI ne khali jawab diya");
+    } catch(e){
+      lastErr = e;
+      const m = errMsg(e);
+      log("AI fail (" + (o.model||"default") + "): " + m, true);
+      if(/sign|auth|login|permission|unauthor/i.test(m)){
+        throw new Error("Sign in zaroori hai. Upar wala 🔑 button dabayein, phir dobara bhejein.");
+      }
+    }
+  }
+  throw new Error("AI jawab nahi de saka. Aakhri wajah: " + errMsg(lastErr));
+}
+
+const PLAN_SYSTEM = `You are a crypto screening planner. The user writes in Roman Urdu / English. Convert their request into a JSON scan plan.
+
+OUTPUT: Only valid JSON. No prose, no markdown fences. Schema:
+{
+  "intent": "scan" | "coin" | "movers",
+  "timeframe": "15m"|"1h"|"4h"|"1d"|"1w",
+  "symbol": "BTC" (only if intent=coin),
+  "movers_by": "gainers"|"losers"|"volume" (only if intent=movers),
+  "rules": {
+    "ema_stack_bullish": true|false,
+    "price_above_ema": 9|21|50|100|200,
+    "price_below_ema": 9|21|50|100|200,
+    "rsi_min": number, "rsi_max": number,
+    "volume_ratio_min": number,
+    "breakout_20": true|false,
+    "near_20_high_pct": number,
+    "near_20_low_pct": number,
+    "change24h_min": number, "change24h_max": number,
+    "funding_max_pct": number, "funding_min_pct": number,
+    "hammer": true|false,
+    "ema_cross_within": number,
+    "max_dist_from_ema21_pct": number,
+    "max_risk_pct": number
+  },
+  "sort_by": "score"|"volume_ratio"|"change24h_pct"|"rsi"|"rsi_low"|"volume24h_usd",
+  "limit": number (1-15),
+  "min_volume_usd": number,
+  "reasoning_ur": "ek line Roman Urdu mein ke kya samjhe"
+}
+
+RULES:
+- Only include fields you are confident about. Omit others.
+- If user is vague ('potential coins do', 'acha coin do', 'kuch batao'), pick sensible momentum rules: ema_stack_bullish=true, volume_ratio_min=1.5, rsi_min=50, rsi_max=70, change24h_max=20.
+- 'pump se pehle' -> ema_stack_bullish=true, volume_ratio_min=1.3, rsi_min=45, rsi_max=68, change24h_max=15, near_20_high_pct=8.
+- 'support ke paas' / 'dip' -> near_20_low_pct=3, rsi_max=55.
+- 'breakout' -> breakout_20=true, volume_ratio_min=1.5.
+- If user names a single coin -> intent=coin, symbol=TICKER (BTC, ETH, SOL...).
+- If user asks top gainers/losers/volume -> intent=movers.
+- Default timeframe if unclear: 4h.
+- Default limit: 5.`;
+
+async function aiPlan(text){
+  const raw = await aiChat([
+    {role:"system", content:PLAN_SYSTEM},
+    {role:"user", content:text}
+  ], {json:true});
+  const cleaned = raw.replace(/```json|```/g,"").trim();
+  const start = cleaned.indexOf("{"); const end = cleaned.lastIndexOf("}");
+  if(start<0 || end<0) throw new Error("AI ne plan nahi diya. Dobara likhein.");
+  const obj = JSON.parse(cleaned.slice(start, end+1));
+  return obj;
+}
+
+const REPORT_SYSTEM = `You are Ayesha, manager of a crypto bot team. The user speaks Roman Urdu + English. Write the final answer in simple Roman Urdu with English technical terms.
+
+You will receive: (a) the user's original request, (b) the scan plan the AI made, (c) the LIVE Binance data (coins, prices, RSI, EMA, volume, stop, target).
+
+HARD RULES:
+- NEVER invent a coin, price or number. Only use data given to you.
+- If matched=0, honestly say no coin passed; list which rule was strictest from rule_pass_counts; suggest what to relax.
+- Format: start with one line "Kya kiya" (timeframe + rules). Then each coin as '### TICKER (score/100)' with 2-4 '- ' bullets: why it qualifies (RSI, volume, EMA, breakout), the numbers, and stop + 1:2 target from the data. If higher_timeframe_confirm exists, add one bullet about it.
+- Max 280 words. Simple Roman Urdu.
+- Finish with exactly: "Yeh financial advice nahi hai."`;
+
+async function aiReport(userText, plan, scanResult, higherTF){
+  const payload = {
+    user_request: userText,
+    plan: plan,
+    scan: {
+      timeframe: scanResult.timeframe,
+      scanned: scanResult.scanned,
+      matched: scanResult.matched,
+      rule_pass_counts: scanResult.rule_pass_counts,
+      coins: scanResult.results.slice(0, 8)
+    },
+    higher_timeframe_confirm: higherTF || null
+  };
+  const raw = await aiChat([
+    {role:"system", content:REPORT_SYSTEM},
+    {role:"user", content:JSON.stringify(payload)}
+  ]);
+  return raw;
+}
+
+async function confirmHigherTF(picks, currentTf){
+  const higher = {"15m":"4h","1h":"4h","4h":"1d","1d":"1w","1w":null}[currentTf];
+  if(!higher || !picks.length) return null;
+  const out = {};
+  for(const pick of picks.slice(0, 5)){
+    try {
+      const m = await tool_coin({symbol:pick.symbol, timeframe:higher});
+      if(!m.error) out[pick.symbol] = {tf:higher, ema_stack_bullish:m.ema_stack_bullish, rsi:m.rsi, change24h_pct:m.change24h_pct, score:m.score};
+    } catch(e){}
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+/* ====================================================================
+   CHAT
+   ==================================================================== */
+const chatEl = document.getElementById("chat");
+let history = [];
+function addMsg(role, html){
+  if(chatEl.querySelector(".empty")) chatEl.innerHTML = "";
+  const d = document.createElement("div"); d.className = "msg " + role; d.innerHTML = html;
+  chatEl.appendChild(d); d.scrollIntoView({behavior:"smooth", block:"nearest"}); return d;
+}
+function chipHtml(rules){
+  const L = {
+    ema_stack_bullish:"EMA bullish", price_above_ema:"price > EMA", price_below_ema:"price < EMA",
+    rsi_min:"RSI ≥", rsi_max:"RSI ≤", volume_ratio_min:"vol ≥", breakout_20:"breakout",
+    near_20_high_pct:"20h ke paas", near_20_low_pct:"support ke paas",
+    change24h_min:"24h ≥", change24h_max:"24h ≤",
+    funding_max_pct:"funding ≤", funding_min_pct:"funding ≥",
+    hammer:"hammer", ema_cross_within:"cross ≤", max_dist_from_ema21_pct:"EMA21 dist ≤", max_risk_pct:"risk ≤"
+  };
+  const U = {rsi_min:"", rsi_max:"", volume_ratio_min:"x", change24h_min:"%", change24h_max:"%",
+    funding_max_pct:"%", funding_min_pct:"%", near_20_high_pct:"%", near_20_low_pct:"%",
+    max_dist_from_ema21_pct:"%", max_risk_pct:"%", ema_cross_within:" c", price_above_ema:"", price_below_ema:""};
+  return Object.entries(rules||{}).map(([k,v]) =>
+    '<span class="tag">' + esc(L[k]||k) + " " + esc(String(v)) + esc(U[k]??"") + "</span>"
+  ).join("");
+}
+
+async function send(text){
+  goBtn.disabled = true; stopBtn.disabled = false; controller = new AbortController(); setProgress(0);
+  addMsg("u", esc(text).replace(/\n/g,"<br>"));
+  const work = addMsg("a", '<p class="empty">Ayesha (AI) hukm parh rahi hai…</p>');
+  AGENTS.forEach(a => setState(a,"idle"));
+
+  try {
+    await goDesk(mgr); setState(mgr,"work"); say(mgr,"AI hukm samajh rahi hai…",0);
+
+    work.innerHTML = '<div class="think on">🧠 AI hukm parh rahi hai…</div>';
+    const plan = await aiPlan(text);
+    log("AI plan: " + JSON.stringify(plan));
+    if(plan.reasoning_ur) say(mgr, plan.reasoning_ur.slice(0,60), 5000);
+
+    const planChips = chipHtml(plan.rules) +
+      (plan.timeframe ? '<span class="tag">TF: '+esc(plan.timeframe.toUpperCase())+'</span>' : '') +
+      (plan.intent==="coin" ? '<span class="tag">coin: '+esc(plan.symbol||"")+'</span>' : '') +
+      (plan.intent==="movers" ? '<span class="tag">movers: '+esc(plan.movers_by||"gainers")+'</span>' : '');
+
+    work.innerHTML =
+      '<div class="round ok"><b>AI ne samjha:</b> ' + esc(plan.reasoning_ur || "plan bana liya") + '</div>' +
+      (planChips ? '<div>'+planChips+'</div>' : '') +
+      '<div id="scanSlot"></div>';
+
+    const slot = work.querySelector("#scanSlot");
+    let scanResult, higher = null;
+    if(plan.intent === "coin" && plan.symbol){
+      slot.innerHTML = '<p class="empty">Ek coin check…</p>';
+      const r = await tool_coin({symbol:plan.symbol, timeframe:plan.timeframe || "4h"});
+      if(r.error) throw new Error(r.error);
+      scanResult = {timeframe:r.timeframe, scanned:1, matched:1, rule_pass_counts:{}, results:[r]};
+    } else if(plan.intent === "movers"){
+      slot.innerHTML = '<p class="empty">Top movers…</p>';
+      const list = await tool_movers({by:plan.movers_by||"gainers", limit:plan.limit||8, min_volume_usd:plan.min_volume_usd||5e6});
+      scanResult = {timeframe:plan.timeframe||"4h", scanned:list.length, matched:list.length, rule_pass_counts:{}, results:list, movers:true};
+    } else {
+      slot.innerHTML = '<p class="empty">Scan chal raha hai…</p>';
+      scanResult = await tool_scan({
+        timeframe: plan.timeframe || "4h",
+        rules: plan.rules || {},
+        sort_by: plan.sort_by || "score",
+        limit: Math.max(plan.limit || 5, 8),
+        min_volume_usd: plan.min_volume_usd || 5e6,
+        max_coins: 200
+      });
+      if(scanResult.matched > 0){
+        slot.innerHTML += '<div class="round"><b>Higher timeframe confirm</b>…</div>';
+        higher = await confirmHigherTF(scanResult.results.slice(0,5), scanResult.timeframe);
+      }
+    }
+
+    slot.innerHTML += '<div class="think on">✍️ AI report likh rahi hai…</div>';
+    await goDesk(rank); setState(rank,"work"); say(rank,"AI report likh raha hai…",0);
+    const report = await aiReport(text, plan, scanResult, higher);
+
+    work.innerHTML = md(report) + '<p class="small">Live: ' + new Date().toLocaleTimeString() + ', ' + (SRC ? SRC.name : "Binance") + ' • AI: ' + esc(getModel() || "default") + '</p>';
+    setState(rank,"done"); say(rank,"Tayyar ✓"); setState(mgr,"done"); say(mgr,"Coins mil gaye!",5000);
+    log("Jawab tayyar.");
+    history.push({role:"user", content:text});
+    history.push({role:"assistant", content:report});
+
+  } catch(e){
+    if(e.name==="AbortError"){ work.innerHTML = '<p class="empty">Kaam rok diya gaya.</p>'; log("Roka gaya."); }
+    else {
+      const msg = (e && e.message) || errMsg(e);
+      work.innerHTML = '<p class="empty">⚠️ ' + esc(msg) + '</p>' +
+        (/sign|auth|login|puter|🔑/i.test(msg) ? '<p class="small">Upar wala 🔑 Sign In button dabayein, phir dobara "Hukm bhejo" dabayein.</p>' : '');
+      log(msg, true);
+    }
+    AGENTS.forEach(a => { if(a.state==="work"||a.state==="walk"){ setState(a,"error"); say(a,"Ruk gaya",4000,true); } });
+  } finally {
+    goBtn.disabled = false; stopBtn.disabled = true; setProgress(1);
+    setTimeout(() => AGENTS.forEach(goHome), 4000);
+  }
+}
+
+goBtn.addEventListener("click", () => { const t = taskEl.value.trim(); if(!t){ taskEl.focus(); return; } taskEl.value = ""; send(t); });
+stopBtn.addEventListener("click", () => controller && controller.abort());
+document.getElementById("reset").addEventListener("click", () => {
+  history = [];
+  chatEl.innerHTML = '<p class="empty">Nayi baat. Hukm dein.</p>';
+});
+
+[
+  "Pump se pehle wale coins do jisme volume acha ho",
+  "Aaj ke top gainers mein se kaun abhi bhi strong hai?",
+  "4H par fresh EMA 9/21 cross wale coins",
+  "1D par support ke paas hammer candle wale coins do",
+  "BTC kaisa hai?",
+  "Acha coin do jo abhi buy karne layak ho"
+].forEach(q => {
+  const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = q;
+  b.addEventListener("click", () => { taskEl.value = q; taskEl.focus(); });
+  document.getElementById("chips").appendChild(b);
+});
+})();
+</script>
+</body>
+</html>
