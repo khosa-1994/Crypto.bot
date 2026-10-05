@@ -108,6 +108,7 @@ h2{font-family:"Pixelify Sans",monospace;font-weight:600;font-size:18px;margin:1
     </select>
     <label for="minVol" style="margin-top:10px">Min 24h volume (USD)</label>
     <select id="minVol">
+      <option value="500000">$500K+ (~600 coins)</option>
       <option value="1000000">$1M+ (~500 coins)</option>
       <option value="2000000" selected>$2M+ (default ~450)</option>
       <option value="5000000">$5M+ (~300)</option>
@@ -115,9 +116,13 @@ h2{font-family:"Pixelify Sans",monospace;font-weight:600;font-size:18px;margin:1
     </select>
     <label style="margin-top:10px;display:flex;align-items:center;gap:8px;font-weight:400">
       <input type="checkbox" id="cryptoOnly" checked style="width:auto">
-      <span>Sirf crypto (stock tokens skip: SPY, MRNA, SKHYNIX, waghera)</span>
+      <span>Sirf crypto (stock tokens skip)</span>
     </label>
-    <p><b>Sources:</b> Binance Futures+Spot, CryptoCompare (direct + AllOrigins proxy fallback). Sab public, koi key nahi.</p>
+    <label style="margin-top:6px;display:flex;align-items:center;gap:8px;font-weight:400">
+      <input type="checkbox" id="autoRelax" checked style="width:auto">
+      <span>Agar 0 match ho, rules khud halka karein (auto-relax)</span>
+    </label>
+    <p><b>Sources:</b> Binance Futures+Spot, CryptoCompare (direct + AllOrigins proxy). Sab public, koi key nahi.</p>
   </details>
 
   <div class="office" id="office"><canvas id="cv" width="192" height="120"></canvas></div>
@@ -179,8 +184,8 @@ function md(t){const ls=esc(t).split("\n");let h="",il=false;const inl=s=>s.repl
 const FUT_BASES=["https://fapi.binance.com/fapi/v1","https://www.binance.com/fapi/v1"];
 const SPOT_BASE="https://data-api.binance.vision/api/v3";
 const STABLE=/^(USDC|FDUSD|TUSD|BUSD|DAI|USDP|USDE|EUR|AEUR|USD1|XUSD|BFUSD|PYUSD|RLUSD|USDS)USDT$/;
-/* Stock tokens + ETFs + non-crypto — bara list */
-const STOCK=/^(SPY|QQQ|IWM|DIA|VTI|GLD|SLV|USO|UNG|TLT|HYG|LQD|EFA|EEM|FXI|MCHI|EWJ|EWZ|EWY|EWT|EWU|EWG|EWC|EWA|EWW|EWL|EWP|EWI|EWN|EWD|EWK|EWQ|EWH|EWS|EWM|TSLA|NVDA|AAPL|MSFT|AMZN|META|GOOG|GOOGL|NFLX|AMD|INTC|ORCL|CRM|ADBE|NOW|SHOP|UBER|LYFT|ABNB|DASH|SQ|PYPL|BABA|NIO|RIVN|LCID|F|GM|T|VZ|TM|HMC|STLA|JPM|BAC|WFC|GS|MS|C|BLK|SCHW|AXP|V|MA|COF|DFS|USB|PNC|TFC|MTB|RF|KEY|CFG|HBAN|FITB|XOM|CVX|COP|SLB|HAL|OXY|PSX|VLO|MPC|PXD|EOG|DVN|FANG|HES|MRO|APA|PFE|MRNA|BNTX|JNJ|UNH|CVS|CI|HUM|ELV|CNC|MOH|WMT|COST|HD|LOW|TGT|KR|SYY|DIS|CMCSA|CHTR|PEP|KO|MNST|MCD|SBUX|YUM|CMG|DPZ|QSR|NKE|LULU|GPS|M|JWN|KSS|ZM|DOCU|TWLO|OKTA|CRWD|PANW|FTNT|ZS|NET|DDOG|SNOW|MDB|TEAM|WDAY|VEEV|HUBS|TTD|ROKU|SPOT|PINS|SNAP|U|RBLX|DKNG|PENN|MGM|WYNN|LVS|CZR|BYND|PTON|WISH|CLOV|SOFI|AFRM|UPST|LC|OPEN|Z|RDFN|EXPI|HOOD|COIN|MSTR|MSTX|CONL|BITX|BTCO|PLTR|AVGO|MRK|ABBV|LLY|TMO|ABT|DHR|BMY|AMGN|GILD|ISRG|SYK|MDT|ZBH|BSX|EW|ILMN|REGN|VRTX|BIIB|SKHY|SKHYNIX|CRCL|ARM|SMCI|DELL|HPQ|IBM|CSCO|QCOM|TXN|MU|ADI|KLAC|LRCX|AMAT|ASML|TSM|SNPS|CDNS|MCHP|NXPI|ON|SWKS|QRVO|MRVL|WDC|STX|NTAP)/;
+/* Bara STOCK/ETF list — Binance stock tokens */
+const STOCK=/^(SPY|QQQ|IWM|DIA|VTI|GLD|SLV|USO|UNG|TLT|HYG|LQD|EFA|EEM|FXI|MCHI|EWJ|EWZ|EWY|EWT|EWU|EWG|EWC|EWA|EWW|EWL|EWP|EWI|EWN|EWD|EWK|EWQ|EWH|EWS|EWM|SPCX|TSLA|NVDA|AAPL|MSFT|AMZN|META|GOOG|GOOGL|NFLX|AMD|INTC|ORCL|CRM|ADBE|NOW|SHOP|UBER|LYFT|ABNB|DASH|SQ|PYPL|BABA|NIO|RIVN|LCID|F|GM|T|VZ|TM|HMC|STLA|JPM|BAC|WFC|GS|MS|C|BLK|SCHW|AXP|V|MA|COF|DFS|USB|PNC|TFC|MTB|RF|KEY|CFG|HBAN|FITB|XOM|CVX|COP|SLB|HAL|OXY|PSX|VLO|MPC|PXD|EOG|DVN|FANG|HES|MRO|APA|PFE|MRNA|BNTX|JNJ|UNH|CVS|CI|HUM|ELV|CNC|MOH|WMT|COST|HD|LOW|TGT|KR|SYY|DIS|CMCSA|CHTR|PEP|KO|MNST|MCD|SBUX|YUM|CMG|DPZ|QSR|NKE|LULU|GPS|M|JWN|KSS|ZM|DOCU|TWLO|OKTA|CRWD|PANW|FTNT|ZS|NET|DDOG|SNOW|MDB|TEAM|WDAY|VEEV|HUBS|TTD|ROKU|SPOT|PINS|SNAP|U|RBLX|DKNG|PENN|MGM|WYNN|LVS|CZR|BYND|PTON|WISH|CLOV|SOFI|AFRM|UPST|LC|OPEN|Z|RDFN|EXPI|HOOD|COIN|MSTR|MSTX|CONL|BITX|BTCO|PLTR|AVGO|MRK|ABBV|LLY|TMO|ABT|DHR|BMY|AMGN|GILD|ISRG|SYK|MDT|ZBH|BSX|EW|ILMN|REGN|VRTX|BIIB|SKHY|SKHYNIX|CRCL|ARM|SMCI|DELL|HPQ|IBM|CSCO|QCOM|TXN|MU|ADI|KLAC|LRCX|AMAT|ASML|TSM|SNPS|CDNS|MCHP|NXPI|ON|SWKS|QRVO|MRVL|WDC|STX|NTAP|SAMSUNG|SONY|HYUNDAI|HON|GE|CAT|BA|MMM|LMT|RTX|NOC|GD|DE|EMR|ETN|ITW|PH|ROK|CMI|PCAR|URI|FAST|GWW|WSO|POOL|SNA|SWK|IR|XYL|DOV|AME|ROP|TDG|TDY|TRMB|KEYS|TER|GRMN|ANSS|PTC|CDW|GLW|APH|TEL|FLEX|JBL|CLS|SANM|PLXS|BHE|VICR)/;
 const modeEl=document.getElementById("mode"),bar=document.getElementById("bar");
 const goBtn=document.getElementById("go"),stopBtn=document.getElementById("stop"),taskEl=document.getElementById("task");
 const[mgr,vol,trd,risk,rank]=AGENTS;
@@ -204,34 +209,19 @@ async function fetchAllTickers(){
 async function klines(sym,tf,market){const base=market==="spot"?SPOT_BASE:(SRC_FUT||FUT_BASES[0]);return cached("k"+sym+tf+market,90e3,()=>getJSON(base+"/klines?symbol="+sym+"&interval="+tf+"&limit=210"))}
 async function fundingAll(){if(!SRC_FUT)return{};try{return await cached("fr",120e3,async()=>{const m={};(await getJSON(SRC_FUT+"/premiumIndex")).forEach(p=>m[p.symbol]=+p.lastFundingRate);return m})}catch(e){if(e.name==="AbortError")throw e;return{}}}
 
-/* ============ CryptoCompare (direct + AllOrigins fallback) ============ */
+/* ============ CryptoCompare ============ */
 async function ccNews(categories, limit=20){
   const key="news_"+(categories||"all");
   return cached(key,300e3,async()=>{
     const direct="https://min-api.cryptocompare.com/data/v2/news/?lang=EN"+(categories?"&categories="+encodeURIComponent(categories):"");
     const proxied="https://api.allorigins.win/raw?url="+encodeURIComponent(direct);
     let data=null;
-    try{
-      log("News: direct CC…");
-      const r=await fetch(direct,{signal:controller.signal,cache:"no-store"});
-      if(r.ok){data=await r.json();log("News: direct OK ("+((data.Data||[]).length)+" articles)")}
-      else{log("News: direct HTTP "+r.status,true)}
-    }catch(e){if(e.name==="AbortError")throw e;log("News: direct fail — "+e.message,true)}
+    try{log("News: direct CC…");const r=await fetch(direct,{signal:controller.signal,cache:"no-store"});if(r.ok){data=await r.json();log("News: direct OK ("+((data.Data||[]).length)+" articles)")}else{log("News: direct HTTP "+r.status,true)}}catch(e){if(e.name==="AbortError")throw e;log("News: direct fail — "+e.message,true)}
     if(!data||!data.Data||!data.Data.length){
-      try{
-        log("News: proxy try (AllOrigins)…");
-        const r=await fetch(proxied,{signal:controller.signal,cache:"no-store"});
-        if(r.ok){data=await r.json();log("News: proxy OK ("+((data.Data||[]).length)+" articles)")}
-        else{log("News: proxy HTTP "+r.status,true)}
-      }catch(e){if(e.name==="AbortError")throw e;log("News: proxy fail — "+e.message,true)}
+      try{log("News: proxy try…");const r=await fetch(proxied,{signal:controller.signal,cache:"no-store"});if(r.ok){data=await r.json();log("News: proxy OK ("+((data.Data||[]).length)+" articles)")}else{log("News: proxy HTTP "+r.status,true)}}catch(e){if(e.name==="AbortError")throw e;log("News: proxy fail — "+e.message,true)}
     }
     if(!data||!data.Data||!data.Data.length){log("News: koi data nahi mila",true);return[]}
-    return data.Data.slice(0,limit).map(a=>({
-      title:a.title,source:a.source_info?a.source_info.name:(a.source||"?"),
-      url:a.url,categories:a.categories||"",
-      published:(a.published_on||0)*1000,
-      body:(a.body||"").slice(0,240)
-    }));
+    return data.Data.slice(0,limit).map(a=>({title:a.title,source:a.source_info?a.source_info.name:(a.source||"?"),url:a.url,categories:a.categories||"",published:(a.published_on||0)*1000,body:(a.body||"").slice(0,240)}));
   });
 }
 async function ccSocial(symbol){
@@ -240,19 +230,10 @@ async function ccSocial(symbol){
     const proxied="https://api.allorigins.win/raw?url="+encodeURIComponent(direct);
     let r=null;
     try{const res=await fetch(direct,{signal:controller.signal,cache:"no-store"});if(res.ok)r=await res.json()}catch(e){if(e.name==="AbortError")throw e}
-    if(!r||!r.Data){
-      try{const res=await fetch(proxied,{signal:controller.signal,cache:"no-store"});if(res.ok)r=await res.json()}catch(e){if(e.name==="AbortError")throw e}
-    }
+    if(!r||!r.Data){try{const res=await fetch(proxied,{signal:controller.signal,cache:"no-store"});if(res.ok)r=await res.json()}catch(e){if(e.name==="AbortError")throw e}}
     if(!r||!r.Data||!r.Data.General)return null;
     const d=r.Data,T=d.Twitter||{},R=d.Reddit||{},G=d.CodeRepository||{},gen=d.General||{};
-    return{
-      twitter_followers:T.followers||0,twitter_points:T.Points||0,
-      reddit_subscribers:R.subscribers||0,reddit_active:R.active_users||0,
-      reddit_posts_per_day:+(R.posts_per_day||0).toFixed(1),
-      reddit_comments_per_day:+(R.comments_per_day||0).toFixed(1),
-      github_stars:G.stars||0,github_forks:G.forks||0,
-      social_score:gen.Points||0
-    };
+    return{twitter_followers:T.followers||0,twitter_points:T.Points||0,reddit_subscribers:R.subscribers||0,reddit_active:R.active_users||0,reddit_posts_per_day:+(R.posts_per_day||0).toFixed(1),reddit_comments_per_day:+(R.comments_per_day||0).toFixed(1),github_stars:G.stars||0,github_forks:G.forks||0,social_score:gen.Points||0};
   });
 }
 const POS_WORDS=/\b(surge|rally|soar|bullish|gain|jump|breakout|adopt|approval|launch|partnership|upgrade|record|high|institutional|etf|buy|accumulate|whale|support)\b/gi;
@@ -295,12 +276,7 @@ async function multiTF(sym,market){
       const base=v.slice(Math.max(0,n-22),n-2),avg=base.length?base.reduce((a,b)=>a+b,0)/base.length:1;
       const vr=avg?Math.max(v[n-1],v[n-2])/avg:0;
       const rv=rsi(c);
-      out[tf]={
-        rsi:isFinite(rv)?+rv.toFixed(1):null,
-        ema_bull:isFinite(e50[n-1])?(c[n-1]>e9[n-1]&&e9[n-1]>e21[n-1]&&e21[n-1]>e50[n-1]):false,
-        vol_ratio:isFinite(vr)?+vr.toFixed(2):null,
-        up:isFinite(e9[n-1])?c[n-1]>e9[n-1]:false
-      };
+      out[tf]={rsi:isFinite(rv)?+rv.toFixed(1):null,ema_bull:isFinite(e50[n-1])?(c[n-1]>e9[n-1]&&e9[n-1]>e21[n-1]&&e21[n-1]>e50[n-1]):false,vol_ratio:isFinite(vr)?+vr.toFixed(2):null,up:isFinite(e9[n-1])?c[n-1]>e9[n-1]:false};
     }catch(e){out[tf]={error:true}}
   }
   return out;
@@ -323,13 +299,7 @@ function metrics(sym,k,t,fr){
   if(R>=50&&R<68)s+=15;else if(R>=68&&R<78)s+=6;else if(R>=78)s-=10;else if(R>=45)s+=5;
   if(fr!=null&&fr>0.0005)s-=8;if(chg>20)s-=10;if(ext>15)s-=8;s=Math.max(0,Math.min(100,Math.round(s)));
   const swing=Math.min(...l.slice(n-10));let stop=Math.min(swing,e21)*0.99;if(stop>=close)stop=close*0.95;
-  return{symbol:sym,score:s,price:r4(close),change24h_pct:+chg.toFixed(2),volume24h_usd:Math.round(+t.quoteVolume),
-    volume_ratio:+vr.toFixed(2),rsi:isFinite(R)?+R.toFixed(1):null,ema9:r4(e9),ema21:r4(e21),ema50:r4(e50),
-    ema_stack_bullish:close>e9&&e9>e21&&e21>e50,breakout_20:close>hh,dist_to_20_high_pct:+((hh/close-1)*100).toFixed(2),
-    dist_from_20_low_pct:+((close/ll-1)*100).toFixed(2),hammer_last_closed:hammer,candles_since_ema9_cross_up_ema21:crossAge,
-    dist_from_ema21_pct:+ext.toFixed(2),funding_pct:fr==null?null:+(fr*100).toFixed(4),
-    stop:r4(stop),risk_pct:+((close-stop)/close*100).toFixed(2),target_1to2:r4(close+2*(close-stop)),
-    net_inflow_usd:0,net_buy_ratio:0.5,market:t.market||"futures"};
+  return{symbol:sym,score:s,price:r4(close),change24h_pct:+chg.toFixed(2),volume24h_usd:Math.round(+t.quoteVolume),volume_ratio:+vr.toFixed(2),rsi:isFinite(R)?+R.toFixed(1):null,ema9:r4(e9),ema21:r4(e21),ema50:r4(e50),ema_stack_bullish:close>e9&&e9>e21&&e21>e50,breakout_20:close>hh,dist_to_20_high_pct:+((hh/close-1)*100).toFixed(2),dist_from_20_low_pct:+((close/ll-1)*100).toFixed(2),hammer_last_closed:hammer,candles_since_ema9_cross_up_ema21:crossAge,dist_from_ema21_pct:+ext.toFixed(2),funding_pct:fr==null?null:+(fr*100).toFixed(4),stop:r4(stop),risk_pct:+((close-stop)/close*100).toFixed(2),target_1to2:r4(close+2*(close-stop)),net_inflow_usd:0,net_buy_ratio:0.5,market:t.market||"futures"};
 }
 const RULES={
   ema_stack_bullish:(m,v)=>m.ema_stack_bullish===v,
@@ -351,6 +321,41 @@ const RULES={
 };
 function setProgress(p){bar.style.width=(p*100)+"%"}
 
+/* ============ AUTO-RELAX (agar 0 match) ============ */
+/* Yeh function rules ki copy leta hai aur sabse sakht rule halka karta hai.
+   Order: volume → rsi range → change_max → near_20 → net_buy → net_inflow → ema_stack */
+function relaxRules(rules){
+  const r={...rules};const changes=[];
+  /* Har rule ko step by step halka karo */
+  if(r.volume_ratio_min!=null && r.volume_ratio_min>1.0){
+    const old=r.volume_ratio_min; r.volume_ratio_min=Math.max(1.0,+(old*0.8).toFixed(2));
+    changes.push("vol "+old+"x → "+r.volume_ratio_min+"x");
+  } else if(r.net_buy_ratio_min!=null && r.net_buy_ratio_min>0.5){
+    const old=r.net_buy_ratio_min; r.net_buy_ratio_min=Math.max(0.5,+(old-0.01).toFixed(2));
+    changes.push("buy≥"+old+" → "+r.net_buy_ratio_min);
+  } else if(r.net_inflow_min_usd!=null && r.net_inflow_min_usd>0){
+    const old=r.net_inflow_min_usd; r.net_inflow_min_usd=0;
+    changes.push("inflow ≥$"+(old/1e3).toFixed(0)+"K → ≥$0");
+  } else if(r.rsi_min!=null && r.rsi_min>40){
+    const old=r.rsi_min; r.rsi_min=Math.max(40,r.rsi_min-5);
+    changes.push("RSI ≥ "+old+" → "+r.rsi_min);
+  } else if(r.rsi_max!=null && r.rsi_max<80){
+    const old=r.rsi_max; r.rsi_max=Math.min(80,r.rsi_max+5);
+    changes.push("RSI ≤ "+old+" → "+r.rsi_max);
+  } else if(r.change24h_max!=null && r.change24h_max<30){
+    const old=r.change24h_max; r.change24h_max=Math.min(30,r.change24h_max+5);
+    changes.push("24h ≤ "+old+"% → "+r.change24h_max+"%");
+  } else if(r.near_20_high_pct!=null){
+    delete r.near_20_high_pct; changes.push("near-20-high hataya");
+  } else if(r.breakout_20!=null){
+    delete r.breakout_20; changes.push("breakout hataya");
+  } else if(r.max_dist_from_ema21_pct!=null && r.max_dist_from_ema21_pct<20){
+    const old=r.max_dist_from_ema21_pct; r.max_dist_from_ema21_pct=Math.min(20,r.max_dist_from_ema21_pct+5);
+    changes.push("EMA21 dist ≤ "+old+"% → "+r.max_dist_from_ema21_pct+"%");
+  }
+  return {rules:r,changes};
+}
+
 /* ============ Scan ============ */
 async function tool_fullScan(plan){
   const tf=["15m","1h","4h","1d","1w"].includes(plan.timeframe)?plan.timeframe:"4h";
@@ -358,6 +363,7 @@ async function tool_fullScan(plan){
   const rules=plan.rules||{};
   const limit=Math.min(plan.limit||5,15);
   const cryptoOnly=document.getElementById("cryptoOnly")?.checked!==false;
+  const autoRelax=document.getElementById("autoRelax")?.checked!==false;
 
   await goDesk(mgr);say(mgr,"Futures+Spot universe…",0);
   const all=await fetchAllTickers();
@@ -376,7 +382,7 @@ async function tool_fullScan(plan){
   const uni=[...bySym.values()].sort((a,b)=>b.quoteVolume-a.quoteVolume);
   const futCount=uni.filter(x=>x.market==="futures").length;
   const spCount=uni.length-futCount;
-  log(`Universe: ${uni.length} coins (${futCount} futures, ${spCount} spot)`+(cryptoOnly?" [crypto-only]":""));
+  log(`Universe: ${uni.length} coins (${futCount} fut, ${spCount} spot)`+(cryptoOnly?" [crypto-only]":"")+" · minVol=$"+(minV/1e6)+"M");
   say(mgr,uni.length+" coins mil gaye",3000);
 
   await goDesk(risk);setState(risk,"work");say(risk,"Funding + net flow…",0);
@@ -398,9 +404,28 @@ async function tool_fullScan(plan){
     await sleep(120);
   }
   log("Scan complete: "+allM.length+" coins");
-  const funnel={};Object.keys(rules).forEach(k=>{if(RULES[k])funnel[k]=allM.filter(m=>RULES[k](m,rules[k])).length});
-  const unknown=Object.keys(rules).filter(k=>!RULES[k]);
-  let hits=allM.filter(m=>Object.entries(rules).every(([k,v])=>!RULES[k]||RULES[k](m,v)));
+
+  /* Pehla pass — jaisa hai waisa */
+  let curRules={...rules};
+  let hits=allM.filter(m=>Object.entries(curRules).every(([k,v])=>!RULES[k]||RULES[k](m,v)));
+  const rounds=[];
+  rounds.push({rules:{...curRules},matched:hits.length});
+
+  /* Auto-relax — 4 baar tak */
+  if(autoRelax && hits.length===0){
+    for(let attempt=1;attempt<=4;attempt++){
+      const {rules:nr,changes}=relaxRules(curRules);
+      if(!changes.length)break;
+      curRules=nr;
+      log("Auto-relax #"+attempt+": "+changes.join("; "));
+      hits=allM.filter(m=>Object.entries(curRules).every(([k,v])=>!RULES[k]||RULES[k](m,v)));
+      rounds.push({rules:{...curRules},matched:hits.length,changes});
+      if(hits.length>0){log("Relax ke baad "+hits.length+" match mile");break}
+    }
+  }
+
+  const funnel={};Object.keys(curRules).forEach(k=>{if(RULES[k])funnel[k]=allM.filter(m=>RULES[k](m,curRules[k])).length});
+  const unknown=Object.keys(curRules).filter(k=>!RULES[k]);
   say(risk,hits.length+" pass",0);
   const sortBy=plan.sort_by||"score";
   hits.sort((a,b)=>sortBy==="rsi_low"?(a.rsi||0)-(b.rsi||0):(b[sortBy]??b.score)-(a[sortBy]??a.score));
@@ -432,17 +457,17 @@ async function tool_fullScan(plan){
   const sentSummary={pos:0,neg:0,neu:0};
   generalNews.forEach(n=>{const s=scoreSentiment(n.title+" "+n.body);sentSummary[s.label]++});
 
-  /* Backtest top 5 */
   for(const p of topPicks.slice(0,5)){
     if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
-    try{p.backtest=await backtest(p.symbol,tf,rules,100,20,p.market)}catch(e){p.backtest={error:e.message}}
+    try{p.backtest=await backtest(p.symbol,tf,curRules,100,20,p.market)}catch(e){p.backtest={error:e.message}}
   }
 
   [trd,vol,risk,mgr].forEach(a=>{setState(a,"done");say(a,"✓")});
   return{timeframe:tf,universe:uni.length,universe_futures:futCount,universe_spot:spCount,
     scanned:allM.length,matched:hits.length,rule_pass_counts:funnel,unknown_rules_ignored:unknown,
     results:topPicks,inflow_leaders:inflowLeaders,whale_leaders:whaleLeaders,
-    news:generalNews.slice(0,12),news_sentiment:sentSummary};
+    news:generalNews.slice(0,12),news_sentiment:sentSummary,
+    final_rules:curRules,rounds};
 }
 async function tool_coin(inp){
   const sym=String(inp.symbol||"").toUpperCase().replace(/[^A-Z0-9]/g,"").replace(/(USDT)?$/,"USDT");
@@ -483,7 +508,6 @@ async function backtest(symbol,tf,rules,lookback=100,horizon=20,market="futures"
     const slice=k.slice(0,i+1);
     const m=metrics(symbol,slice,simT,null);
     if(!m)continue;
-    /* Sim mein net_inflow available nahi — sirf price rules apply karo */
     const checkRules={};Object.entries(rules).forEach(([key,val])=>{if(key!=="net_inflow_min_usd"&&key!=="net_buy_ratio_min")checkRules[key]=val});
     if(!Object.entries(checkRules).every(([key,val])=>!RULES[key]||RULES[key](m,val)))continue;
     signals++;
@@ -520,11 +544,6 @@ async function teamDiscuss(scanResult){
   if(ns&&(ns.pos+ns.neg)>0){
     const tone=ns.pos>ns.neg?"positive":(ns.neg>ns.pos?"negative":"mixed");
     lines.push({agent:vol,text:`📰 News: ${ns.pos} positive, ${ns.neg} negative — market tone <b>${tone}</b>.`});
-  }
-  const withSocial=coins.filter(c=>c.social);
-  if(withSocial.length){
-    const top=withSocial[0];const s=top.social;
-    lines.push({agent:trd,text:`📊 Social: <b>${top.symbol}</b> — Twitter ${(s.twitter_followers||0).toLocaleString()}, Reddit ${(s.reddit_subscribers||0).toLocaleString()}.`});
   }
   return lines;
 }
@@ -593,7 +612,6 @@ async function aiChat(messages,{json=false}={}){
   throw new Error("AI jawab nahi de saka: "+errMsg(lastErr));
 }
 
-/* ============ Guards ============ */
 function prepumpGuard(text,plan){
   const t=text.toLowerCase();
   const isPre=/pump\s*se\s*(pehle|phle|pahle|pehlay)|before\s*pump|pre[- ]?pump/i.test(t);
@@ -603,11 +621,10 @@ function prepumpGuard(text,plan){
     ema_stack_bullish:true,volume_ratio_min:1.3,rsi_min:45,rsi_max:68,
     change24h_max:15,max_dist_from_ema21_pct:8,
     net_inflow_min_usd:0,
-    net_buy_ratio_min:0.51,
     ...(plan.rules||{}),
     change24h_max:15,max_dist_from_ema21_pct:8,
-    net_inflow_min_usd:0,net_buy_ratio_min:0.51
-  },sort_by:"volume_ratio",reasoning_ur:"Pump se pehle: EMA bullish, vol ≥1.3x, RSI 45-68, 24h ≤15%, EMA21 se 8% andar, net inflow positive"};
+    net_inflow_min_usd:0
+  },sort_by:"volume_ratio",reasoning_ur:"Pump se pehle: EMA bullish, vol ≥1.3x, RSI 45-68, 24h ≤15%, EMA21 se 8% andar, net inflow ≥$0"};
   if(isDip)return{...plan,intent:"scan",rules:{price_above_ema:50,rsi_max:55,near_20_low_pct:5,change24h_min:-25,change24h_max:5,net_inflow_min_usd:0,...(plan.rules||{})},sort_by:"rsi_low"};
   if(isBreak)return{...plan,intent:"scan",rules:{breakout_20:true,volume_ratio_min:1.5,rsi_min:50,rsi_max:78,...(plan.rules||{})}};
   return plan;
@@ -616,12 +633,13 @@ function prepumpGuard(text,plan){
 const PLAN_SYSTEM=`You are a crypto screening planner. User writes Roman Urdu / English. Output ONLY valid JSON, no prose, no fences.
 Schema: {intent:"scan"|"coin"|"movers",timeframe:"15m"|"1h"|"4h"|"1d"|"1w",symbol:"BTC"(coin only),movers_by:"gainers"|"losers"|"volume"(movers only),rules:{},sort_by:"score"|"volume_ratio"|"change24h_pct"|"rsi"|"rsi_low"|"volume24h_usd"|"net_inflow_usd",limit:1-15,min_volume_usd:number,reasoning_ur:"one line"}
 Rule keys: ema_stack_bullish,price_above_ema(9|21|50|100|200),price_below_ema,rsi_min,rsi_max,volume_ratio_min,breakout_20,near_20_high_pct,near_20_low_pct,change24h_min,change24h_max,funding_max_pct,funding_min_pct,hammer,ema_cross_within,max_dist_from_ema21_pct,max_risk_pct,net_inflow_min_usd,net_buy_ratio_min
-CRITICAL:
-- "pump se pehle" → intent=scan, rules: ema_stack_bullish=true,volume_ratio_min=1.3,rsi_min=45,rsi_max=68,change24h_max=15,max_dist_from_ema21_pct=8,net_inflow_min_usd=0,net_buy_ratio_min=0.51
+CRITICAL — keep rules LOOSE (5-8 rules max), warna 0 match aayega:
+- "pump se pehle" → intent=scan, rules: ema_stack_bullish=true,volume_ratio_min=1.3,rsi_min=45,rsi_max=68,change24h_max=15,max_dist_from_ema21_pct=8
 - "top gainers/losers/volume" → intent=movers
 - single coin name → intent=coin
 - vague ("acha coin do") → scan with ema_stack_bullish=true,volume_ratio_min=1.5,rsi_min=50,rsi_max=70,change24h_max=20
-- Default TF=4h, limit=5, min_volume_usd=2000000`;
+- Default TF=4h, limit=5, min_volume_usd=2000000
+- NEVER add more than 6 rules. Quality over quantity.`;
 
 async function aiPlan(text){
   const raw=await aiChat([{role:"system",content:PLAN_SYSTEM},{role:"user",content:text}],{json:true});
@@ -633,27 +651,40 @@ async function aiPlan(text){
 
 const REPORT_SYSTEM=`You are Ayesha, manager of a crypto bot team. User speaks Roman Urdu + English. Write final answer in simple Roman Urdu.
 
-You receive: user request, plan, LIVE scan (universe size, matched, top coins with FULL metrics: price,rsi,volume_ratio,net_inflow_usd,net_buy_ratio,whale,multiTF,backtest,stop,target,social,news), net inflow leaders, whale leaders, general news list with sentiment, news_sentiment counts.
+You receive: user request, plan, LIVE scan (universe, matched, rule_pass_counts, top coins with metrics, inflow_leaders, whale_leaders, news, news_sentiment), rounds (auto-relax history if any).
+
+AVAILABLE DATA — sirf yeh:
+- price, change24h_pct, RSI, volume_ratio, EMA stack
+- net_inflow_usd, net_buy_ratio
+- whale (large aggTrades net)
+- multiTF (15m/1h/4h/1d/1w ka RSI + trend)
+- social (Twitter/Reddit/GitHub counts)
+- news (headlines + sentiment)
+- stop, target_1to2, risk_pct
+- backtest (signals, wins, losses, winRate)
+
+NEVER mention these — data nahi hai:
+- FVG (Fair Value Gap), order blocks, liquidity zones
+- Support/Resistance lines, trendlines, chart patterns
+- On-chain flows, wallet movements, smart money
+- Options data, open interest, funding predictions
+Agar user pooche to saaf bolo: "Yeh data app mein nahi hai."
 
 HARD RULES:
-- NEVER invent numbers. Only use what's in the JSON.
-- Do NOT say "data missing" — every field you need is provided. If a coin lacks a field, skip it and use next.
-- Format: brief 2-line summary (universe size, timeframe, rules). Then 3-5 coins as "### N. TICKER (score/100)" with bullets: WHY (rules + numbers), Net inflow $X (buy Y%), Whale flow (if any), Multi-TF summary, Social (Twitter/Reddit if present), Recent news headline if relevant, Stop + 1:2 target, Backtest win rate.
-- If backtest winRate<40% or signals<3, warn honestly.
-- If news sentiment strongly negative (neg > pos+2), add a warning line.
-- If matched=0, say so and list top rule_pass_counts from data.
-- Max 340 words. Roman Urdu.
+- NEVER invent numbers. Sirf JSON ka data.
+- If matched=0: brief explanation + rule_pass_counts list + rounds (kya relax hua) + ek suggestion. NO invented coins.
+- If matched>0: 2-line summary + 3-5 coins as "### N. TICKER (score/100)" with bullets: WHY, Net inflow, Whale, Multi-TF, Social/News, Stop/Target, Backtest.
+- If backtest winRate<40% or signals<3, warn.
+- Max 320 words. Roman Urdu.
 - Finish exactly: "Yeh financial advice nahi hai."`;
 
 async function aiReport(text,plan,scan){
   const payload={user_request:text,plan,scan:{
     timeframe:scan.timeframe,universe:scan.universe,universe_futures:scan.universe_futures,universe_spot:scan.universe_spot,
     scanned:scan.scanned,matched:scan.matched,rule_pass_counts:scan.rule_pass_counts,
-    coins:(scan.results||[]).slice(0,6).map(c=>({symbol:c.symbol,market:c.market,score:c.score,price:c.price,rsi:c.rsi,volume_ratio:c.volume_ratio,
-      change24h_pct:c.change24h_pct,ema_stack_bullish:c.ema_stack_bullish,breakout_20:c.breakout_20,
-      net_inflow_usd:c.net_inflow_usd,net_buy_ratio:c.net_buy_ratio,whale:c.whale,multiTF:c.multiTF,stop:c.stop,risk_pct:c.risk_pct,target_1to2:c.target_1to2,
-      backtest:c.backtest,social:c.social,news:(c.news||[]).map(n=>({title:n.title,source:n.source,sent:n.sent.label}))})),
-    inflow_leaders:(scan.inflow_leaders||[]).slice(0,5).map(c=>({symbol:c.symbol,net_inflow_usd:c.net_inflow_usd,net_buy_ratio:c.net_buy_ratio,market:c.market})),
+    final_rules:scan.final_rules,rounds:scan.rounds,
+    coins:(scan.results||[]).slice(0,6).map(c=>({symbol:c.symbol,market:c.market,score:c.score,price:c.price,rsi:c.rsi,volume_ratio:c.volume_ratio,change24h_pct:c.change24h_pct,ema_stack_bullish:c.ema_stack_bullish,breakout_20:c.breakout_20,net_inflow_usd:c.net_inflow_usd,net_buy_ratio:c.net_buy_ratio,whale:c.whale,multiTF:c.multiTF,stop:c.stop,risk_pct:c.risk_pct,target_1to2:c.target_1to2,backtest:c.backtest,social:c.social,news:(c.news||[]).map(n=>({title:n.title,source:n.source,sent:n.sent.label}))})),
+    inflow_leaders:(scan.inflow_leaders||[]).slice(0,5).map(c=>({symbol:c.symbol,net_inflow_usd:c.net_inflow_usd,net_buy_ratio:c.net_buy_ratio,market:c.market,rsi:c.rsi,volume_ratio:c.volume_ratio,ema_stack_bullish:c.ema_stack_bullish})),
     whale_leaders:(scan.whale_leaders||[]).slice(0,5).map(c=>({symbol:c.symbol,whale:c.whale})),
     news:(scan.news||[]).slice(0,10).map(n=>({title:n.title,source:n.source,categories:n.categories,sent:scoreSentiment(n.title+" "+n.body).label})),
     news_sentiment:scan.news_sentiment
@@ -669,16 +700,25 @@ function fPct(x){return x==null?"—":(x>=0?"+":"")+(+x).toFixed(2)+"%"}
 function timeAgo(ms){const s=Math.floor((Date.now()-ms)/1000);if(s<60)return s+"s ago";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return Math.floor(s/86400)+"d ago"}
 
 function renderScanSummary(s){
+  const rounds=s.rounds||[];
+  let roundHtml="";
+  if(rounds.length>1){
+    roundHtml='<div style="font-size:12px;color:var(--muted);margin-top:6px">Auto-relax history: '+rounds.map((r,i)=>{
+      const ch=r.changes?(' ('+r.changes.join(", ")+')'):'';
+      return "R"+(i+1)+"→"+r.matched+" match"+ch;
+    }).join(" · ")+'</div>';
+  }
   return'<div class="sect"><h4>📊 SCAN SUMMARY</h4>'+
     `<div style="font-size:13px">Universe: <b>${s.universe}</b> (${s.universe_futures} fut · ${s.universe_spot} spot) · TF: <b>${s.timeframe.toUpperCase()}</b> · Matched: <b>${s.matched}</b></div>`+
+    roundHtml+
   '</div>';
 }
 function renderInflow(s){
   const l=s.inflow_leaders||[];if(!l.length)return"";
-  let h='<div class="sect"><h4>💰 TOP NET INFLOW</h4><table class="tbl"><tr><th>#</th><th>Coin</th><th>Mkt</th><th style="text-align:right">Net</th><th style="text-align:right">Buy%</th></tr>';
+  let h='<div class="sect"><h4>💰 TOP NET INFLOW</h4><table class="tbl"><tr><th>#</th><th>Coin</th><th>Mkt</th><th style="text-align:right">Net</th><th style="text-align:right">Buy%</th><th style="text-align:right">RSI</th></tr>';
   l.slice(0,5).forEach((c,i)=>{
     const cls=c.net_inflow_usd>=0?"up":"dn";
-    h+=`<tr><td>${i+1}</td><td><b>${esc(c.symbol)}</b></td><td><span class="badge ${c.market==="spot"?"sp":"fut"}">${c.market}</span></td><td class="num ${cls}">${fUSDs(c.net_inflow_usd)}</td><td class="num">${(c.net_buy_ratio*100).toFixed(0)}%</td></tr>`;
+    h+=`<tr><td>${i+1}</td><td><b>${esc(c.symbol)}</b></td><td><span class="badge ${c.market==="spot"?"sp":"fut"}">${c.market}</span></td><td class="num ${cls}">${fUSDs(c.net_inflow_usd)}</td><td class="num">${(c.net_buy_ratio*100).toFixed(0)}%</td><td class="num">${c.rsi??"—"}</td></tr>`;
   });
   return h+'</table></div>';
 }
@@ -705,15 +745,20 @@ function renderNews(s){
 }
 function renderPicks(s){
   const picks=(s.results||[]).slice(0,5);
-  if(!picks.length)return'<div class="sect"><h4>Koi match nahi hua</h4>'+(s.rule_pass_counts?Object.entries(s.rule_pass_counts).map(([k,v])=>`<div style="font-size:13px">${esc(k)}: ${v} coins</div>`).join(""):"")+'</div>';
+  if(!picks.length){
+    let h='<div class="sect"><h4>⚠️ Koi coin match nahi hua</h4>';
+    h+='<div style="font-size:13px;margin-bottom:6px">Har rule kitne coins ne pass kiya:</div>';
+    if(s.rule_pass_counts){
+      h+='<table class="tbl"><tr><th>Rule</th><th style="text-align:right">Coins</th></tr>';
+      Object.entries(s.rule_pass_counts).forEach(([k,v])=>{h+=`<tr><td>${esc(k)}</td><td class="num">${v}</td></tr>`});
+      h+='</table>';
+    }
+    return h+'</div>';
+  }
   let h='<div class="sect"><h4>📈 TOP MATCHES</h4>';
   picks.forEach((c,i)=>{
     const mtf=c.multiTF||{};
-    const mtfHtml=["15m","1h","4h","1d","1w"].map(tf=>{
-      const t=mtf[tf];if(!t||t.error||t.rsi==null)return "";
-      const cls=t.up?"up":"dn";
-      return`<span class="mtf ${cls}">${tf}: ${t.rsi}${t.up?"↑":"↓"}</span>`;
-    }).join("");
+    const mtfHtml=["15m","1h","4h","1d","1w"].map(tf=>{const t=mtf[tf];if(!t||t.error||t.rsi==null)return "";const cls=t.up?"up":"dn";return`<span class="mtf ${cls}">${tf}: ${t.rsi}${t.up?"↑":"↓"}</span>`}).join("");
     const inflowCls=c.net_inflow_usd>=0?"up":"dn";const w=c.whale;const soc=c.social;
     h+=`<div style="border:1px solid var(--line);border-radius:6px;padding:8px;margin:6px 0">`+
       `<div style="font-family:'Pixelify Sans',monospace;font-size:17px;font-weight:600">#${i+1} ${esc(c.symbol)} <span style="font-size:13px;color:var(--muted)">(${c.score}/100)</span> <span class="badge ${c.market==="spot"?"sp":"fut"}">${c.market}</span></div>`+
@@ -766,11 +811,11 @@ async function send(text){
       slot.innerHTML='<p class="empty">Ek coin check…</p>';
       const r=await tool_coin({symbol:plan.symbol,timeframe:plan.timeframe||"4h"});
       if(r.error)throw new Error(r.error);
-      scanResult={timeframe:r.timeframe,universe:1,universe_futures:r.market==="futures"?1:0,universe_spot:r.market==="spot"?1:0,scanned:1,matched:1,rule_pass_counts:{},results:[r],inflow_leaders:[r],whale_leaders:r.whale?[r]:[],news:[],news_sentiment:{pos:0,neg:0,neu:0}};
+      scanResult={timeframe:r.timeframe,universe:1,universe_futures:r.market==="futures"?1:0,universe_spot:r.market==="spot"?1:0,scanned:1,matched:1,rule_pass_counts:{},results:[r],inflow_leaders:[r],whale_leaders:r.whale?[r]:[],news:[],news_sentiment:{pos:0,neg:0,neu:0},rounds:[]};
     }else if(plan.intent==="movers"){
       slot.innerHTML='<p class="empty">Top movers…</p>';
       const list=await tool_movers({by:plan.movers_by||"gainers",limit:plan.limit||8,min_volume_usd:plan.min_volume_usd});
-      scanResult={timeframe:plan.timeframe||"4h",universe:list.length,universe_futures:0,universe_spot:0,scanned:list.length,matched:list.length,rule_pass_counts:{},results:list,inflow_leaders:[],whale_leaders:[],news:[],news_sentiment:{pos:0,neg:0,neu:0},movers:true};
+      scanResult={timeframe:plan.timeframe||"4h",universe:list.length,universe_futures:0,universe_spot:0,scanned:list.length,matched:list.length,rule_pass_counts:{},results:list,inflow_leaders:[],whale_leaders:[],news:[],news_sentiment:{pos:0,neg:0,neu:0},movers:true,rounds:[]};
     }else{
       slot.innerHTML='<p class="empty">Full scan (Futures+Spot)…</p>';
       scanResult=await tool_fullScan(plan);
