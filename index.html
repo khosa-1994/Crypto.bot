@@ -92,7 +92,7 @@ h2{font-family:"Pixelify Sans",monospace;font-weight:600;font-size:18px;margin:1
 <body>
 <div class="wrap">
   <h1>Crypto Bot Team</h1>
-  <p class="sub">Futures + Spot, net inflow, whales, news, social momentum, 5 timeframes, backtest. Pehle Sign In karein.</p>
+  <p class="sub">Futures + Spot, net inflow, whales, news, social, 5 timeframes, backtest. Pehle Sign In karein.</p>
 
   <details class="cfg">
     <summary>Setup & info</summary>
@@ -113,7 +113,11 @@ h2{font-family:"Pixelify Sans",monospace;font-weight:600;font-size:18px;margin:1
       <option value="5000000">$5M+ (~300)</option>
       <option value="10000000">$10M+ (~200)</option>
     </select>
-    <p><b>Data sources:</b> Binance Futures + Spot (tickers, klines, funding, aggTrades), CryptoCompare min-api (news, social stats). Sab public, koi key nahi.</p>
+    <label style="margin-top:10px;display:flex;align-items:center;gap:8px;font-weight:400">
+      <input type="checkbox" id="cryptoOnly" checked style="width:auto">
+      <span>Sirf crypto (stock tokens skip: SPY, SKHYNIX, waghera)</span>
+    </label>
+    <p><b>Sources:</b> Binance Futures+Spot, CryptoCompare min-api (news/social) + AllOrigins fallback. Sab public, koi key nahi.</p>
   </details>
 
   <div class="office" id="office"><canvas id="cv" width="192" height="120"></canvas></div>
@@ -175,6 +179,9 @@ function md(t){const ls=esc(t).split("\n");let h="",il=false;const inl=s=>s.repl
 const FUT_BASES=["https://fapi.binance.com/fapi/v1","https://www.binance.com/fapi/v1"];
 const SPOT_BASE="https://data-api.binance.vision/api/v3";
 const STABLE=/^(USDC|FDUSD|TUSD|BUSD|DAI|USDP|USDE|EUR|AEUR|USD1|XUSD|BFUSD|PYUSD|RLUSD|USDS)USDT$/;
+/* Stock tokens — crypto nahi, skip */
+const STOCK=/^(SPY|QQQ|TSLA|NVDA|AAPL|MSFT|AMZN|META|GOOG|GOOGL|COIN|MSTR|MSTX|CONL|BITX|BTCO|PLTR|AVGO|NFLX|AMD|INTC|ORCL|CRM|ADBE|NOW|SNOW|SHOP|UBER|LYFT|ABNB|DASH|SQ|PYPL|SKHY|SKHYNIX|CRCL|HOOD|BABA|NIO|RIVN|LCID|F|GM|T|VZ|JPM|BAC|WFC|GS|MS|C|XOM|CVX|PFE|MRNA|JNJ|UNH|WMT|COST|HD|LOW|DIS|CMCSA|PEP|KO|MCD|SBUX|NKE|LULU|ZM|DOCU|TWLO|OKTA|CRWD|PANW|FTNT|ZS|NET|DDOG|SNOW|MDB|TEAM|WDAY|VEEV|HUBS|TTD|ROKU|SPOT|PINS|SNAP|U|RBLX|DKNG|PENN|MGM|WYNN|LVS|CZR|BYND|PTON|WISH|CLOV|PLTR|SOFI|AFRM|UPST|LC|OPEN|Z|RDFN|EXPI|HOOD)/;
+
 const modeEl=document.getElementById("mode"),bar=document.getElementById("bar");
 const goBtn=document.getElementById("go"),stopBtn=document.getElementById("stop"),taskEl=document.getElementById("task");
 const[mgr,vol,trd,risk,rank]=AGENTS;
@@ -198,67 +205,66 @@ async function fetchAllTickers(){
 async function klines(sym,tf,market){const base=market==="spot"?SPOT_BASE:(SRC_FUT||FUT_BASES[0]);return cached("k"+sym+tf+market,90e3,()=>getJSON(base+"/klines?symbol="+sym+"&interval="+tf+"&limit=210"))}
 async function fundingAll(){if(!SRC_FUT)return{};try{return await cached("fr",120e3,async()=>{const m={};(await getJSON(SRC_FUT+"/premiumIndex")).forEach(p=>m[p.symbol]=+p.lastFundingRate);return m})}catch(e){if(e.name==="AbortError")throw e;return{}}}
 
-/* ============ DATA: CryptoCompare (min-api, CORS-friendly) ============ */
+/* ============ DATA: CryptoCompare (direct + AllOrigins fallback) ============ */
 const CC_BASE="https://min-api.cryptocompare.com/data";
-
-/* News feed — returns array of articles with title, source, url, categories, sentiment */
 async function ccNews(categories, limit=20){
-  const url=CC_BASE+"/v2/news/?lang=EN&excludeCategories=Sponsored"+(categories?"&categories="+encodeURIComponent(categories):"");
-  return cached("news_"+(categories||"all"),300e3,async()=>{
+  const key="news_"+(categories||"all");
+  return cached(key,300e3,async()=>{
+    const direct="https://min-api.cryptocompare.com/data/v2/news/?lang=EN"+(categories?"&categories="+encodeURIComponent(categories):"");
+    const proxied="https://api.allorigins.win/raw?url="+encodeURIComponent(direct);
+    let data=null;
     try{
-      const r=await getJSON(url);
-      if(!r||!r.Data)return[];
-      return r.Data.slice(0,limit).map(a=>({
-        title:a.title, source:a.source_info?a.source_info.name:(a.source||"?"),
-        url:a.url, categories:a.categories||"",
-        published:(a.published_on||0)*1000,
-        body:(a.body||"").slice(0,240),
-        image:a.imageurl||null
-      }));
-    }catch(e){if(e.name==="AbortError")throw e;log("CryptoCompare news: "+e.message,true);return[]}
+      log("News: direct CC…");
+      const r=await fetch(direct,{signal:controller.signal,cache:"no-store"});
+      if(r.ok){data=await r.json();log("News: direct OK")}
+      else{log("News: direct HTTP "+r.status,true)}
+    }catch(e){if(e.name==="AbortError")throw e;log("News: direct fail — "+e.message,true)}
+    if(!data||!data.Data||!data.Data.length){
+      try{
+        log("News: proxy try (AllOrigins)…");
+        const r=await fetch(proxied,{signal:controller.signal,cache:"no-store"});
+        if(r.ok){data=await r.json();log("News: proxy OK")}
+        else{log("News: proxy HTTP "+r.status,true)}
+      }catch(e){if(e.name==="AbortError")throw e;log("News: proxy fail — "+e.message,true)}
+    }
+    if(!data||!data.Data||!data.Data.length){log("News: koi data nahi mila",true);return[]}
+    return data.Data.slice(0,limit).map(a=>({
+      title:a.title,source:a.source_info?a.source_info.name:(a.source||"?"),
+      url:a.url,categories:a.categories||"",
+      published:(a.published_on||0)*1000,
+      body:(a.body||"").slice(0,240)
+    }));
   });
 }
-
-/* Social stats — Twitter followers, Reddit subscribers, GitHub stars */
 async function ccSocial(symbol){
   return cached("soc_"+symbol,600e3,async()=>{
-    try{
-      const r=await getJSON(CC_BASE+"/social/coin/latest?coin="+encodeURIComponent(symbol));
-      if(!r||!r.Data||!r.Data.General)return null;
-      const d=r.Data;
-      const T=d.Twitter||{}, R=d.Reddit||{}, G=d.CodeRepository||{}, gen=d.General||{};
-      return{
-        twitter_followers:T.followers||0, twitter_points:T.Points||0,
-        reddit_subscribers:R.subscribers||0, reddit_active:R.active_users||0,
-        reddit_posts_per_day:+(R.posts_per_day||0).toFixed(1),
-        reddit_comments_per_day:+(R.comments_per_day||0).toFixed(1),
-        github_stars:G.stars||0, github_forks:G.forks||0,
-        social_score:gen.Points||0
-      };
-    }catch(e){if(e.name==="AbortError")throw e;return null}
+    const direct=CC_BASE+"/social/coin/latest?coin="+encodeURIComponent(symbol);
+    const proxied="https://api.allorigins.win/raw?url="+encodeURIComponent(direct);
+    let r=null;
+    try{const res=await fetch(direct,{signal:controller.signal,cache:"no-store"});if(res.ok)r=await res.json()}catch(e){if(e.name==="AbortError")throw e}
+    if(!r||!r.Data){
+      try{const res=await fetch(proxied,{signal:controller.signal,cache:"no-store"});if(res.ok)r=await res.json()}catch(e){if(e.name==="AbortError")throw e}
+    }
+    if(!r||!r.Data||!r.Data.General)return null;
+    const d=r.Data,T=d.Twitter||{},R=d.Reddit||{},G=d.CodeRepository||{},gen=d.General||{};
+    return{
+      twitter_followers:T.followers||0,twitter_points:T.Points||0,
+      reddit_subscribers:R.subscribers||0,reddit_active:R.active_users||0,
+      reddit_posts_per_day:+(R.posts_per_day||0).toFixed(1),
+      reddit_comments_per_day:+(R.comments_per_day||0).toFixed(1),
+      github_stars:G.stars||0,github_forks:G.forks||0,
+      social_score:gen.Points||0
+    };
   });
 }
-
-/* Sentiment scoring — simple keyword-based (English news) */
 const POS_WORDS=/\b(surge|rally|soar|bullish|gain|jump|breakout|adopt|approval|launch|partnership|upgrade|record|high|institutional|etf|buy|accumulate|whale|support)\b/gi;
 const NEG_WORDS=/\b(crash|plunge|dump|bearish|drop|fall|hack|exploit|ban|crackdown|lawsuit|sec|charges|delist|warning|risk|liquidat|scam|fraud|sell[- ]?off)\b/gi;
-function scoreSentiment(text){
-  const t=String(text||"");
-  const p=(t.match(POS_WORDS)||[]).length;
-  const n=(t.match(NEG_WORDS)||[]).length;
-  const score=p-n;
-  return{score, label:score>0?"pos":score<0?"neg":"neu", p, n};
-}
-/* Match news to a coin by symbol in title/categories */
-function newsForSymbol(news, symbol){
-  const base=symbol.replace(/USDT$/,"");
-  const re=new RegExp("\\b"+base+"\\b","i");
-  return news.filter(a=>re.test(a.title)||re.test(a.categories)||re.test(a.body)).slice(0,5);
-}
+function scoreSentiment(text){const t=String(text||"");const p=(t.match(POS_WORDS)||[]).length;const n=(t.match(NEG_WORDS)||[]).length;const score=p-n;return{score,label:score>0?"pos":score<0?"neg":"neu",p,n}}
+function newsForSymbol(news, symbol){const base=symbol.replace(/USDT$/,"");const re=new RegExp("\\b"+base+"\\b","i");return news.filter(a=>re.test(a.title)||re.test(a.categories)||re.test(a.body)).slice(0,5)}
 
 /* ============ INDICATORS ============ */
 function ema(a,p){const k=2/(p+1);let e=a[0];const o=[e];for(let i=1;i<a.length;i++){e=a[i]*k+e*(1-k);o.push(e)}return o}
-function rsi(c,p=14){let g=0,l=0;for(let i=1;i<=p;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d}g/=p;l/=p;for(let i=p+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(p-1)+Math.max(d,0))/p;l=(l*(p-1)+Math.max(-d,0))/p}return l===0?100:100-100/(1+g/l)}
+function rsi(c,p=14){if(c.length<p+2)return NaN;let g=0,l=0;for(let i=1;i<=p;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d}g/=p;l/=p;for(let i=p+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(p-1)+Math.max(d,0))/p;l=(l*(p-1)+Math.max(-d,0))/p}return l===0?100:100-100/(1+g/l)}
 const r4=x=>x==null?null:+(+x).toPrecision(5);
 
 function netInflow(k){
@@ -285,11 +291,18 @@ async function multiTF(sym,market){
   for(const tf of tfs){
     try{
       const k=await klines(sym,tf,market);
+      if(k.length<55){out[tf]={error:true};continue}
       const c=k.map(x=>+x[4]),v=k.map(x=>+x[7]);const n=c.length;
       const e9=ema(c,9),e21=ema(c,21),e50=ema(c,50);
-      const base=v.slice(n-22,n-2),avg=base.reduce((a,b)=>a+b,0)/base.length||1;
-      const vr=Math.max(v[n-1],v[n-2])/avg;
-      out[tf]={rsi:+rsi(c).toFixed(1),ema_bull:c[n-1]>e9[n-1]&&e9[n-1]>e21[n-1]&&e21[n-1]>e50[n-1],vol_ratio:+vr.toFixed(2),up:c[n-1]>e9[n-1]};
+      const base=v.slice(Math.max(0,n-22),n-2),avg=base.length?base.reduce((a,b)=>a+b,0)/base.length:1;
+      const vr=avg?Math.max(v[n-1],v[n-2])/avg:0;
+      const rv=rsi(c);
+      out[tf]={
+        rsi:isFinite(rv)?+rv.toFixed(1):null,
+        ema_bull:isFinite(e50[n-1])?(c[n-1]>e9[n-1]&&e9[n-1]>e21[n-1]&&e21[n-1]>e50[n-1]):false,
+        vol_ratio:isFinite(vr)?+vr.toFixed(2):null,
+        up:isFinite(e9[n-1])?c[n-1]>e9[n-1]:false
+      };
     }catch(e){out[tf]={error:true}}
   }
   return out;
@@ -313,7 +326,7 @@ function metrics(sym,k,t,fr){
   if(fr!=null&&fr>0.0005)s-=8;if(chg>20)s-=10;if(ext>15)s-=8;s=Math.max(0,Math.min(100,Math.round(s)));
   const swing=Math.min(...l.slice(n-10));let stop=Math.min(swing,e21)*0.99;if(stop>=close)stop=close*0.95;
   return{symbol:sym,score:s,price:r4(close),change24h_pct:+chg.toFixed(2),volume24h_usd:Math.round(+t.quoteVolume),
-    volume_ratio:+vr.toFixed(2),rsi:+R.toFixed(1),ema9:r4(e9),ema21:r4(e21),ema50:r4(e50),
+    volume_ratio:+vr.toFixed(2),rsi:isFinite(R)?+R.toFixed(1):null,ema9:r4(e9),ema21:r4(e21),ema50:r4(e50),
     ema_stack_bullish:close>e9&&e9>e21&&e21>e50,breakout_20:close>hh,dist_to_20_high_pct:+((hh/close-1)*100).toFixed(2),
     dist_from_20_low_pct:+((close/ll-1)*100).toFixed(2),hammer_last_closed:hammer,candles_since_ema9_cross_up_ema21:crossAge,
     dist_from_ema21_pct:+ext.toFixed(2),funding_pct:fr==null?null:+(fr*100).toFixed(4),
@@ -324,7 +337,7 @@ const RULES={
   ema_stack_bullish:(m,v)=>m.ema_stack_bullish===v,
   price_above_ema:(m,v)=>m["ema"+v]!=null&&m.price>m["ema"+v],
   price_below_ema:(m,v)=>m["ema"+v]!=null&&m.price<m["ema"+v],
-  rsi_min:(m,v)=>m.rsi>=v,rsi_max:(m,v)=>m.rsi<=v,
+  rsi_min:(m,v)=>m.rsi!=null&&m.rsi>=v,rsi_max:(m,v)=>m.rsi!=null&&m.rsi<=v,
   volume_ratio_min:(m,v)=>m.volume_ratio>=v,
   breakout_20:(m,v)=>m.breakout_20===v,
   near_20_high_pct:(m,v)=>m.dist_to_20_high_pct<=v&&m.dist_to_20_high_pct>=0,
@@ -346,6 +359,7 @@ async function tool_fullScan(plan){
   const minV=plan.min_volume_usd??2e6;
   const rules=plan.rules||{};
   const limit=Math.min(plan.limit||5,15);
+  const cryptoOnly=document.getElementById("cryptoOnly")?.checked!==false;
 
   await goDesk(mgr);say(mgr,"Futures+Spot universe…",0);
   const all=await fetchAllTickers();
@@ -355,6 +369,7 @@ async function tool_fullScan(plan){
     if(!t.symbol.endsWith("USDT"))return;
     if(t.symbol.includes("_"))return;
     if(STABLE.test(t.symbol))return;
+    if(cryptoOnly&&STOCK.test(t.symbol))return;
     if(t.closeTime&&now-t.closeTime>2*3600e3)return;
     if(+t.quoteVolume<minV)return;
     const prev=bySym.get(t.symbol);
@@ -363,7 +378,7 @@ async function tool_fullScan(plan){
   const uni=[...bySym.values()].sort((a,b)=>b.quoteVolume-a.quoteVolume);
   const futCount=uni.filter(x=>x.market==="futures").length;
   const spCount=uni.length-futCount;
-  log(`Universe: ${uni.length} coins (${futCount} futures, ${spCount} spot)`);
+  log(`Universe: ${uni.length} coins (${futCount} futures, ${spCount} spot)`+(cryptoOnly?" [crypto-only]":""));
   say(mgr,uni.length+" coins mil gaye",3000);
 
   await goDesk(risk);setState(risk,"work");say(risk,"Funding + net flow…",0);
@@ -390,11 +405,10 @@ async function tool_fullScan(plan){
   let hits=allM.filter(m=>Object.entries(rules).every(([k,v])=>!RULES[k]||RULES[k](m,v)));
   say(risk,hits.length+" pass",0);
   const sortBy=plan.sort_by||"score";
-  hits.sort((a,b)=>sortBy==="rsi_low"?a.rsi-b.rsi:(b[sortBy]??b.score)-(a[sortBy]??a.score));
+  hits.sort((a,b)=>sortBy==="rsi_low"?(a.rsi||0)-(b.rsi||0):(b[sortBy]??b.score)-(a[sortBy]??a.score));
   const inflowLeaders=[...allM].sort((a,b)=>b.net_inflow_usd-a.net_inflow_usd).slice(0,8);
   const topPicks=hits.slice(0,Math.min(limit,8));
 
-  /* Whale flow */
   say(vol,"Whale flow…",0);
   for(const p of topPicks){
     if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
@@ -402,29 +416,24 @@ async function tool_fullScan(plan){
   }
   const whaleLeaders=topPicks.filter(p=>p.whale&&p.whale.count>0).sort((a,b)=>(b.whale?.net_usd||0)-(a.whale?.net_usd||0)).slice(0,5);
 
-  /* Multi-TF */
   say(trd,"Multi-timeframe…",0);
   for(const p of topPicks.slice(0,5)){
     if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
     p.multiTF=await multiTF(p.symbol,p.market);
   }
 
-  /* CryptoCompare: news + social for top picks */
   await goDesk(mgr);setState(mgr,"work");say(mgr,"News + social…",0);
   let generalNews=[];
-  try{ generalNews=await ccNews(null,20); log("News: "+generalNews.length+" articles") }
-  catch(e){ if(e.name==="AbortError")throw e; log("News fail: "+e.message,true) }
+  try{generalNews=await ccNews(null,20)}catch(e){if(e.name==="AbortError")throw e}
 
   for(const p of topPicks.slice(0,5)){
     if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
     p.social=await ccSocial(p.symbol.replace(/USDT$/,""));
     p.news=newsForSymbol(generalNews,p.symbol).map(n=>({...n,sent:scoreSentiment(n.title+" "+n.body)}));
   }
-  /* General sentiment across all news */
   const sentSummary={pos:0,neg:0,neu:0};
   generalNews.forEach(n=>{const s=scoreSentiment(n.title+" "+n.body);sentSummary[s.label]++});
 
-  /* Backtest for top 3 */
   for(const p of topPicks.slice(0,3)){
     if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
     try{p.backtest=await backtest(p.symbol,tf,rules,100,20,p.market)}catch(e){p.backtest={error:e.message}}
@@ -436,7 +445,6 @@ async function tool_fullScan(plan){
     results:topPicks,inflow_leaders:inflowLeaders,whale_leaders:whaleLeaders,
     news:generalNews.slice(0,12),news_sentiment:sentSummary};
 }
-
 async function tool_coin(inp){
   const sym=String(inp.symbol||"").toUpperCase().replace(/[^A-Z0-9]/g,"").replace(/(USDT)?$/,"USDT");
   const tf=inp.timeframe||"4h";
@@ -459,7 +467,8 @@ async function tool_coin(inp){
 async function tool_movers(inp){
   await goDesk(vol);setState(vol,"work");say(vol,"Top movers…",0);
   const minV=inp.min_volume_usd??2e6;
-  let tk=(await fetchAllTickers()).filter(t=>t.symbol.endsWith("USDT")&&!t.symbol.includes("_")&&!STABLE.test(t.symbol)&&+t.quoteVolume>=minV&&(!t.closeTime||Date.now()-t.closeTime<2*3600e3));
+  const cryptoOnly=document.getElementById("cryptoOnly")?.checked!==false;
+  let tk=(await fetchAllTickers()).filter(t=>t.symbol.endsWith("USDT")&&!t.symbol.includes("_")&&!STABLE.test(t.symbol)&&(!cryptoOnly||!STOCK.test(t.symbol))&&+t.quoteVolume>=minV&&(!t.closeTime||Date.now()-t.closeTime<2*3600e3));
   const by=inp.by||"gainers";
   tk.sort((a,b)=>by==="losers"?a.priceChangePercent-b.priceChangePercent:by==="volume"?b.quoteVolume-a.quoteVolume:b.priceChangePercent-a.priceChangePercent);
   setState(vol,"done");say(vol,"✓");
@@ -495,15 +504,16 @@ async function teamDiscuss(scanResult){
   const topVol=[...coins].sort((a,b)=>b.volume_ratio-a.volume_ratio)[0];
   lines.push({agent:vol,text:`Top volume: <b>${topVol.symbol}</b> ${topVol.volume_ratio}x. ${coins.filter(c=>c.volume_ratio>=2).length} coins 2x+.`});
   const bull=coins.filter(c=>c.ema_stack_bullish).length;
-  const avgRsi=(coins.reduce((a,c)=>a+c.rsi,0)/coins.length).toFixed(1);
+  const rsis=coins.map(c=>c.rsi).filter(x=>x!=null);
+  const avgRsi=rsis.length?(rsis.reduce((a,b)=>a+b,0)/rsis.length).toFixed(1):"—";
   lines.push({agent:trd,text:`${bull}/${coins.length} EMA bullish, avg RSI ${avgRsi}.`});
   const topInflow=[...coins].sort((a,b)=>b.net_inflow_usd-a.net_inflow_usd)[0];
-  lines.push({agent:risk,text:`Top inflow: <b>${topInflow.symbol}</b> +$${(topInflow.net_inflow_usd/1e6).toFixed(2)}M (buy ${(topInflow.net_buy_ratio*100).toFixed(0)}%).`});
+  lines.push({agent:risk,text:`Top inflow: <b>${topInflow.symbol}</b> ${fUSDs(topInflow.net_inflow_usd)} (buy ${(topInflow.net_buy_ratio*100).toFixed(0)}%).`});
   const whales=coins.filter(c=>c.whale&&c.whale.count>0);
   if(whales.length){
     const w=[...whales].sort((a,b)=>(b.whale.net_usd||0)-(a.whale.net_usd||0))[0];
     const dir=w.whale.net_usd>=0?"buy":"sell";
-    lines.push({agent:vol,text:`🐋 Whale: <b>${w.symbol}</b> ${dir} $${Math.abs(w.whale.net_usd/1e6).toFixed(2)}M (${w.whale.count} trades).`});
+    lines.push({agent:vol,text:`🐋 Whale: <b>${w.symbol}</b> ${dir} $${fUSD(Math.abs(w.whale.net_usd))} (${w.whale.count} trades).`});
   }
   const ns=scanResult.news_sentiment;
   if(ns&&(ns.pos+ns.neg)>0){
@@ -512,8 +522,7 @@ async function teamDiscuss(scanResult){
   }
   const withSocial=coins.filter(c=>c.social);
   if(withSocial.length){
-    const top=withSocial[0];
-    const s=top.social;
+    const top=withSocial[0];const s=top.social;
     lines.push({agent:trd,text:`📊 Social: <b>${top.symbol}</b> — Twitter ${(s.twitter_followers||0).toLocaleString()}, Reddit ${(s.reddit_subscribers||0).toLocaleString()}.`});
   }
   return lines;
@@ -643,13 +652,11 @@ async function aiReport(text,plan,scan){
 }
 
 /* ============ RENDER ============ */
-function fUSD(x){const a=Math.abs(x);if(a>=1e9)return(x/1e9).toFixed(2)+"B";if(a>=1e6)return(x/1e6).toFixed(2)+"M";if(a>=1e3)return(x/1e3).toFixed(1)+"K";return x.toFixed(0)}
+function fUSD(x){const a=Math.abs(x);if(a>=1e9)return(a/1e9).toFixed(2)+"B";if(a>=1e6)return(a/1e6).toFixed(2)+"M";if(a>=1e3)return(a/1e3).toFixed(1)+"K";return a.toFixed(0)}
+function fUSDs(x){return(x>=0?"+":"-")+"$"+fUSD(x)}
 function fNum(x){return x==null?"—":(+x).toLocaleString("en-US",{maximumFractionDigits:6})}
 function fPct(x){return x==null?"—":(x>=0?"+":"")+(+x).toFixed(2)+"%"}
-function timeAgo(ms){
-  const s=Math.floor((Date.now()-ms)/1000);
-  if(s<60)return s+"s ago";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return Math.floor(s/86400)+"d ago";
-}
+function timeAgo(ms){const s=Math.floor((Date.now()-ms)/1000);if(s<60)return s+"s ago";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return Math.floor(s/86400)+"d ago"}
 
 function renderScanSummary(s){
   return'<div class="sect"><h4>📊 SCAN SUMMARY</h4>'+
@@ -661,7 +668,7 @@ function renderInflow(s){
   let h='<div class="sect"><h4>💰 TOP NET INFLOW</h4><table class="tbl"><tr><th>#</th><th>Coin</th><th>Mkt</th><th style="text-align:right">Net</th><th style="text-align:right">Buy%</th></tr>';
   l.slice(0,5).forEach((c,i)=>{
     const cls=c.net_inflow_usd>=0?"up":"dn";
-    h+=`<tr><td>${i+1}</td><td><b>${esc(c.symbol)}</b></td><td><span class="badge ${c.market==="spot"?"sp":"fut"}">${c.market}</span></td><td class="num ${cls}">${c.net_inflow_usd>=0?"+":"-"}$${fUSD(c.net_inflow_usd)}</td><td class="num">${(c.net_buy_ratio*100).toFixed(0)}%</td></tr>`;
+    h+=`<tr><td>${i+1}</td><td><b>${esc(c.symbol)}</b></td><td><span class="badge ${c.market==="spot"?"sp":"fut"}">${c.market}</span></td><td class="num ${cls}">${fUSDs(c.net_inflow_usd)}</td><td class="num">${(c.net_buy_ratio*100).toFixed(0)}%</td></tr>`;
   });
   return h+'</table></div>';
 }
@@ -670,7 +677,7 @@ function renderWhales(s){
   let h='<div class="sect"><h4>🐋 WHALE ALERT</h4><table class="tbl"><tr><th>Coin</th><th style="text-align:right">Net USD</th><th style="text-align:right">Trades</th></tr>';
   l.forEach(c=>{
     const w=c.whale;if(!w)return;const cls=w.net_usd>=0?"up":"dn";
-    h+=`<tr><td><b>${esc(c.symbol)}</b></td><td class="num ${cls}">${w.net_usd>=0?"+":"-"}$${fUSD(w.net_usd)}</td><td class="num">${w.count}</td></tr>`;
+    h+=`<tr><td><b>${esc(c.symbol)}</b></td><td class="num ${cls}">${fUSDs(w.net_usd)}</td><td class="num">${w.count}</td></tr>`;
   });
   return h+'</table></div>';
 }
@@ -680,9 +687,9 @@ function renderNews(s){
   const tone=sent.pos>sent.neg?"🟢 positive":(sent.neg>sent.pos?"🔴 negative":"⚪ mixed");
   let h=`<div class="sect"><h4>📰 MARKET NEWS (CryptoCompare)</h4><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Sentiment: ${tone} — ${sent.pos} pos · ${sent.neg} neg · ${sent.neu} neu</div>`;
   news.slice(0,6).forEach(n=>{
-    const sent=scoreSentiment(n.title+" "+n.body);
-    const cls=sent.label==="pos"?"pos":(sent.label==="neg"?"neg":"neu");
-    h+=`<div class="news"><div class="t"><span class="sent ${cls}">${sent.label}</span>${esc(n.title)}</div><div class="m">${esc(n.source)} · ${timeAgo(n.published)}</div></div>`;
+    const senti=scoreSentiment(n.title+" "+n.body);
+    const cls=senti.label==="pos"?"pos":(senti.label==="neg"?"neg":"neu");
+    h+=`<div class="news"><div class="t"><span class="sent ${cls}">${senti.label}</span>${esc(n.title)}</div><div class="m">${esc(n.source)} · ${timeAgo(n.published)}</div></div>`;
   });
   return h+'</div>';
 }
@@ -692,18 +699,22 @@ function renderPicks(s){
   let h='<div class="sect"><h4>📈 TOP MATCHES</h4>';
   picks.forEach((c,i)=>{
     const mtf=c.multiTF||{};
-    const mtfHtml=["15m","1h","4h","1d","1w"].map(tf=>{const t=mtf[tf];if(!t)return"";const cls=t.error?"":(t.up?"up":"dn");return`<span class="mtf ${cls}">${tf}: ${t.error?"?":t.rsi+(t.up?"↑":"↓")}</span>`}).join("");
+    const mtfHtml=["15m","1h","4h","1d","1w"].map(tf=>{
+      const t=mtf[tf];if(!t||t.error||t.rsi==null)return "";
+      const cls=t.up?"up":"dn";
+      return`<span class="mtf ${cls}">${tf}: ${t.rsi}${t.up?"↑":"↓"}</span>`;
+    }).join("");
     const inflowCls=c.net_inflow_usd>=0?"up":"dn";const w=c.whale;const soc=c.social;
     h+=`<div style="border:1px solid var(--line);border-radius:6px;padding:8px;margin:6px 0">`+
       `<div style="font-family:'Pixelify Sans',monospace;font-size:17px;font-weight:600">#${i+1} ${esc(c.symbol)} <span style="font-size:13px;color:var(--muted)">(${c.score}/100)</span> <span class="badge ${c.market==="spot"?"sp":"fut"}">${c.market}</span></div>`+
-      `<div style="font-size:13px;margin:4px 0">$${fNum(c.price)} · ${fPct(c.change24h_pct)} · RSI ${c.rsi} · vol ${c.volume_ratio}x</div>`+
-      `<div style="font-size:13px">Net inflow: <b class="${inflowCls}">${c.net_inflow_usd>=0?"+":"-"}$${fUSD(c.net_inflow_usd)}</b> (buy ${(c.net_buy_ratio*100).toFixed(0)}%)</div>`+
-      (w?`<div style="font-size:13px">🐋 Whale: <b class="${w.net_usd>=0?"up":"dn"}">${w.net_usd>=0?"+":"-"}$${fUSD(w.net_usd)}</b> (${w.count} trades)</div>`:"")+
+      `<div style="font-size:13px;margin:4px 0">$${fNum(c.price)} · ${fPct(c.change24h_pct)} · RSI ${c.rsi??"—"} · vol ${c.volume_ratio}x</div>`+
+      `<div style="font-size:13px">Net inflow: <b class="${inflowCls}">${fUSDs(c.net_inflow_usd)}</b> (buy ${(c.net_buy_ratio*100).toFixed(0)}%)</div>`+
+      (w?`<div style="font-size:13px">🐋 Whale: <b class="${w.net_usd>=0?"up":"dn"}">${fUSDs(w.net_usd)}</b> (${w.count} trades)</div>`:"")+
       (soc?`<div style="font-size:13px">📊 Twitter ${(soc.twitter_followers||0).toLocaleString()} · Reddit ${(soc.reddit_subscribers||0).toLocaleString()}${soc.github_stars?" · GH ⭐"+soc.github_stars:""}</div>`:"")+
       (c.news&&c.news.length?`<div style="font-size:13px;margin-top:4px">📰 <b>${esc(c.news[0].title)}</b> <span class="sent ${c.news[0].sent.label}">${c.news[0].sent.label}</span></div>`:"")+
       (mtfHtml?`<div style="margin:4px 0">${mtfHtml}</div>`:"")+
       `<div style="font-size:13px">Stop $${fNum(c.stop)} (${c.risk_pct}%) · Target $${fNum(c.target_1to2)}</div>`+
-      (c.backtest&&!c.backtest.error?`<div class="bt">Backtest: <span class="wr">${c.backtest.winRate!=null?c.backtest.winRate+"%":"—"}</span> <span class="wl">${c.backtest.signals} signals · ${c.backtest.wins}W/${c.backtest.losses}L/${c.backtest.neutral}N</span></div>`:"")+
+      (c.backtest&&!c.backtest.error?(()=>{const bt=c.backtest;const dec=bt.wins+bt.losses;const wrTxt=dec===0?"No trades":(bt.winRate!=null?bt.winRate+"%":"—");const note=bt.signals<3?" (kam signals)":"";return `<div class="bt">Backtest: <span class="wr">${wrTxt}</span> <span class="wl">${bt.signals} signals · ${bt.wins}W/${bt.losses}L/${bt.neutral}N${note}</span></div>`})():"")+
     `</div>`;
   });
   return h+'</div>';
