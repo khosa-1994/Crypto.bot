@@ -115,9 +115,9 @@ h2{font-family:"Pixelify Sans",monospace;font-weight:600;font-size:18px;margin:1
     </select>
     <label style="margin-top:10px;display:flex;align-items:center;gap:8px;font-weight:400">
       <input type="checkbox" id="cryptoOnly" checked style="width:auto">
-      <span>Sirf crypto (stock tokens skip: SPY, SKHYNIX, waghera)</span>
+      <span>Sirf crypto (stock tokens skip: SPY, MRNA, SKHYNIX, waghera)</span>
     </label>
-    <p><b>Sources:</b> Binance Futures+Spot, CryptoCompare min-api (news/social) + AllOrigins fallback. Sab public, koi key nahi.</p>
+    <p><b>Sources:</b> Binance Futures+Spot, CryptoCompare (direct + AllOrigins proxy fallback). Sab public, koi key nahi.</p>
   </details>
 
   <div class="office" id="office"><canvas id="cv" width="192" height="120"></canvas></div>
@@ -175,13 +175,12 @@ function log(m,e=false){if(logEl.querySelector(".empty"))logEl.innerHTML="";cons
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
 function md(t){const ls=esc(t).split("\n");let h="",il=false;const inl=s=>s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");for(const r of ls){const l=r.trim();if(/^[-*•]\s+/.test(l)){if(!il){h+="<ul>";il=true}h+="<li>"+inl(l.replace(/^[-*•]\s+/,""))+"</li>";continue}if(il){h+="</ul>";il=false}if(!l)continue;if(/^#{1,4}\s/.test(l))h+="<h3>"+inl(l.replace(/^#{1,4}\s/,""))+"</h3>";else h+="<p>"+inl(l)+"</p>"}if(il)h+="</ul>";return h}
 
-/* ============ DATA: Binance Futures+Spot ============ */
+/* ============ Binance data ============ */
 const FUT_BASES=["https://fapi.binance.com/fapi/v1","https://www.binance.com/fapi/v1"];
 const SPOT_BASE="https://data-api.binance.vision/api/v3";
 const STABLE=/^(USDC|FDUSD|TUSD|BUSD|DAI|USDP|USDE|EUR|AEUR|USD1|XUSD|BFUSD|PYUSD|RLUSD|USDS)USDT$/;
-/* Stock tokens — crypto nahi, skip */
-const STOCK=/^(SPY|QQQ|TSLA|NVDA|AAPL|MSFT|AMZN|META|GOOG|GOOGL|COIN|MSTR|MSTX|CONL|BITX|BTCO|PLTR|AVGO|NFLX|AMD|INTC|ORCL|CRM|ADBE|NOW|SNOW|SHOP|UBER|LYFT|ABNB|DASH|SQ|PYPL|SKHY|SKHYNIX|CRCL|HOOD|BABA|NIO|RIVN|LCID|F|GM|T|VZ|JPM|BAC|WFC|GS|MS|C|XOM|CVX|PFE|MRNA|JNJ|UNH|WMT|COST|HD|LOW|DIS|CMCSA|PEP|KO|MCD|SBUX|NKE|LULU|ZM|DOCU|TWLO|OKTA|CRWD|PANW|FTNT|ZS|NET|DDOG|SNOW|MDB|TEAM|WDAY|VEEV|HUBS|TTD|ROKU|SPOT|PINS|SNAP|U|RBLX|DKNG|PENN|MGM|WYNN|LVS|CZR|BYND|PTON|WISH|CLOV|PLTR|SOFI|AFRM|UPST|LC|OPEN|Z|RDFN|EXPI|HOOD)/;
-
+/* Stock tokens + ETFs + non-crypto — bara list */
+const STOCK=/^(SPY|QQQ|IWM|DIA|VTI|GLD|SLV|USO|UNG|TLT|HYG|LQD|EFA|EEM|FXI|MCHI|EWJ|EWZ|EWY|EWT|EWU|EWG|EWC|EWA|EWW|EWL|EWP|EWI|EWN|EWD|EWK|EWQ|EWH|EWS|EWM|TSLA|NVDA|AAPL|MSFT|AMZN|META|GOOG|GOOGL|NFLX|AMD|INTC|ORCL|CRM|ADBE|NOW|SHOP|UBER|LYFT|ABNB|DASH|SQ|PYPL|BABA|NIO|RIVN|LCID|F|GM|T|VZ|TM|HMC|STLA|JPM|BAC|WFC|GS|MS|C|BLK|SCHW|AXP|V|MA|COF|DFS|USB|PNC|TFC|MTB|RF|KEY|CFG|HBAN|FITB|XOM|CVX|COP|SLB|HAL|OXY|PSX|VLO|MPC|PXD|EOG|DVN|FANG|HES|MRO|APA|PFE|MRNA|BNTX|JNJ|UNH|CVS|CI|HUM|ELV|CNC|MOH|WMT|COST|HD|LOW|TGT|KR|SYY|DIS|CMCSA|CHTR|PEP|KO|MNST|MCD|SBUX|YUM|CMG|DPZ|QSR|NKE|LULU|GPS|M|JWN|KSS|ZM|DOCU|TWLO|OKTA|CRWD|PANW|FTNT|ZS|NET|DDOG|SNOW|MDB|TEAM|WDAY|VEEV|HUBS|TTD|ROKU|SPOT|PINS|SNAP|U|RBLX|DKNG|PENN|MGM|WYNN|LVS|CZR|BYND|PTON|WISH|CLOV|SOFI|AFRM|UPST|LC|OPEN|Z|RDFN|EXPI|HOOD|COIN|MSTR|MSTX|CONL|BITX|BTCO|PLTR|AVGO|MRK|ABBV|LLY|TMO|ABT|DHR|BMY|AMGN|GILD|ISRG|SYK|MDT|ZBH|BSX|EW|ILMN|REGN|VRTX|BIIB|SKHY|SKHYNIX|CRCL|ARM|SMCI|DELL|HPQ|IBM|CSCO|QCOM|TXN|MU|ADI|KLAC|LRCX|AMAT|ASML|TSM|SNPS|CDNS|MCHP|NXPI|ON|SWKS|QRVO|MRVL|WDC|STX|NTAP)/;
 const modeEl=document.getElementById("mode"),bar=document.getElementById("bar");
 const goBtn=document.getElementById("go"),stopBtn=document.getElementById("stop"),taskEl=document.getElementById("task");
 const[mgr,vol,trd,risk,rank]=AGENTS;
@@ -205,8 +204,7 @@ async function fetchAllTickers(){
 async function klines(sym,tf,market){const base=market==="spot"?SPOT_BASE:(SRC_FUT||FUT_BASES[0]);return cached("k"+sym+tf+market,90e3,()=>getJSON(base+"/klines?symbol="+sym+"&interval="+tf+"&limit=210"))}
 async function fundingAll(){if(!SRC_FUT)return{};try{return await cached("fr",120e3,async()=>{const m={};(await getJSON(SRC_FUT+"/premiumIndex")).forEach(p=>m[p.symbol]=+p.lastFundingRate);return m})}catch(e){if(e.name==="AbortError")throw e;return{}}}
 
-/* ============ DATA: CryptoCompare (direct + AllOrigins fallback) ============ */
-const CC_BASE="https://min-api.cryptocompare.com/data";
+/* ============ CryptoCompare (direct + AllOrigins fallback) ============ */
 async function ccNews(categories, limit=20){
   const key="news_"+(categories||"all");
   return cached(key,300e3,async()=>{
@@ -216,14 +214,14 @@ async function ccNews(categories, limit=20){
     try{
       log("News: direct CC…");
       const r=await fetch(direct,{signal:controller.signal,cache:"no-store"});
-      if(r.ok){data=await r.json();log("News: direct OK")}
+      if(r.ok){data=await r.json();log("News: direct OK ("+((data.Data||[]).length)+" articles)")}
       else{log("News: direct HTTP "+r.status,true)}
     }catch(e){if(e.name==="AbortError")throw e;log("News: direct fail — "+e.message,true)}
     if(!data||!data.Data||!data.Data.length){
       try{
         log("News: proxy try (AllOrigins)…");
         const r=await fetch(proxied,{signal:controller.signal,cache:"no-store"});
-        if(r.ok){data=await r.json();log("News: proxy OK")}
+        if(r.ok){data=await r.json();log("News: proxy OK ("+((data.Data||[]).length)+" articles)")}
         else{log("News: proxy HTTP "+r.status,true)}
       }catch(e){if(e.name==="AbortError")throw e;log("News: proxy fail — "+e.message,true)}
     }
@@ -238,7 +236,7 @@ async function ccNews(categories, limit=20){
 }
 async function ccSocial(symbol){
   return cached("soc_"+symbol,600e3,async()=>{
-    const direct=CC_BASE+"/social/coin/latest?coin="+encodeURIComponent(symbol);
+    const direct="https://min-api.cryptocompare.com/data/social/coin/latest?coin="+encodeURIComponent(symbol);
     const proxied="https://api.allorigins.win/raw?url="+encodeURIComponent(direct);
     let r=null;
     try{const res=await fetch(direct,{signal:controller.signal,cache:"no-store"});if(res.ok)r=await res.json()}catch(e){if(e.name==="AbortError")throw e}
@@ -260,9 +258,9 @@ async function ccSocial(symbol){
 const POS_WORDS=/\b(surge|rally|soar|bullish|gain|jump|breakout|adopt|approval|launch|partnership|upgrade|record|high|institutional|etf|buy|accumulate|whale|support)\b/gi;
 const NEG_WORDS=/\b(crash|plunge|dump|bearish|drop|fall|hack|exploit|ban|crackdown|lawsuit|sec|charges|delist|warning|risk|liquidat|scam|fraud|sell[- ]?off)\b/gi;
 function scoreSentiment(text){const t=String(text||"");const p=(t.match(POS_WORDS)||[]).length;const n=(t.match(NEG_WORDS)||[]).length;const score=p-n;return{score,label:score>0?"pos":score<0?"neg":"neu",p,n}}
-function newsForSymbol(news, symbol){const base=symbol.replace(/USDT$/,"");const re=new RegExp("\\b"+base+"\\b","i");return news.filter(a=>re.test(a.title)||re.test(a.categories)||re.test(a.body)).slice(0,5)}
+function newsForSymbol(news, symbol){const base=symbol.replace(/USDT$/,"");if(base.length<2)return[];const re=new RegExp("\\b"+base+"\\b","i");return news.filter(a=>re.test(a.title)||re.test(a.categories)||re.test(a.body)).slice(0,5)}
 
-/* ============ INDICATORS ============ */
+/* ============ Indicators ============ */
 function ema(a,p){const k=2/(p+1);let e=a[0];const o=[e];for(let i=1;i<a.length;i++){e=a[i]*k+e*(1-k);o.push(e)}return o}
 function rsi(c,p=14){if(c.length<p+2)return NaN;let g=0,l=0;for(let i=1;i<=p;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d}g/=p;l/=p;for(let i=p+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(p-1)+Math.max(d,0))/p;l=(l*(p-1)+Math.max(-d,0))/p}return l===0?100:100-100/(1+g/l)}
 const r4=x=>x==null?null:+(+x).toPrecision(5);
@@ -353,7 +351,7 @@ const RULES={
 };
 function setProgress(p){bar.style.width=(p*100)+"%"}
 
-/* ============ SCAN ============ */
+/* ============ Scan ============ */
 async function tool_fullScan(plan){
   const tf=["15m","1h","4h","1d","1w"].includes(plan.timeframe)?plan.timeframe:"4h";
   const minV=plan.min_volume_usd??2e6;
@@ -434,7 +432,8 @@ async function tool_fullScan(plan){
   const sentSummary={pos:0,neg:0,neu:0};
   generalNews.forEach(n=>{const s=scoreSentiment(n.title+" "+n.body);sentSummary[s.label]++});
 
-  for(const p of topPicks.slice(0,3)){
+  /* Backtest top 5 */
+  for(const p of topPicks.slice(0,5)){
     if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
     try{p.backtest=await backtest(p.symbol,tf,rules,100,20,p.market)}catch(e){p.backtest={error:e.message}}
   }
@@ -484,7 +483,9 @@ async function backtest(symbol,tf,rules,lookback=100,horizon=20,market="futures"
     const slice=k.slice(0,i+1);
     const m=metrics(symbol,slice,simT,null);
     if(!m)continue;
-    if(!Object.entries(rules).every(([key,val])=>!RULES[key]||RULES[key](m,val)))continue;
+    /* Sim mein net_inflow available nahi — sirf price rules apply karo */
+    const checkRules={};Object.entries(rules).forEach(([key,val])=>{if(key!=="net_inflow_min_usd"&&key!=="net_buy_ratio_min")checkRules[key]=val});
+    if(!Object.entries(checkRules).every(([key,val])=>!RULES[key]||RULES[key](m,val)))continue;
     signals++;
     const stop=m.stop,target=m.target_1to2;
     let result="neutral";
@@ -498,7 +499,7 @@ async function backtest(symbol,tf,rules,lookback=100,horizon=20,market="futures"
   return{symbol,tf,lookback,horizon,signals,wins,losses,neutral,winRate:dec?+(wins/dec*100).toFixed(1):null};
 }
 
-/* ============ TEAM DISCUSSION ============ */
+/* ============ Team discussion ============ */
 async function teamDiscuss(scanResult){
   const lines=[];const coins=scanResult.results||[];if(!coins.length)return lines;
   const topVol=[...coins].sort((a,b)=>b.volume_ratio-a.volume_ratio)[0];
@@ -592,13 +593,22 @@ async function aiChat(messages,{json=false}={}){
   throw new Error("AI jawab nahi de saka: "+errMsg(lastErr));
 }
 
+/* ============ Guards ============ */
 function prepumpGuard(text,plan){
   const t=text.toLowerCase();
   const isPre=/pump\s*se\s*(pehle|phle|pahle|pehlay)|before\s*pump|pre[- ]?pump/i.test(t);
   const isDip=/\bdip\b|\bsupport\s*ke?\s*paas\b|\bpullback\b|\bretrace\b/i.test(t);
   const isBreak=/\bbreakout\b|\bbreak\s*out\b/i.test(t);
-  if(isPre)return{...plan,intent:"scan",timeframe:plan.timeframe||"4h",rules:{ema_stack_bullish:true,volume_ratio_min:1.3,rsi_min:45,rsi_max:68,change24h_max:15,max_dist_from_ema21_pct:8,...(plan.rules||{}),change24h_max:15,max_dist_from_ema21_pct:8},sort_by:"volume_ratio",reasoning_ur:"Pump se pehle: EMA bullish, vol ≥1.3x, RSI 45-68, 24h ≤15%, EMA21 se 8% andar"};
-  if(isDip)return{...plan,intent:"scan",rules:{price_above_ema:50,rsi_max:55,near_20_low_pct:5,change24h_min:-25,change24h_max:5,...(plan.rules||{})},sort_by:"rsi_low"};
+  if(isPre)return{...plan,intent:"scan",timeframe:plan.timeframe||"4h",rules:{
+    ema_stack_bullish:true,volume_ratio_min:1.3,rsi_min:45,rsi_max:68,
+    change24h_max:15,max_dist_from_ema21_pct:8,
+    net_inflow_min_usd:0,
+    net_buy_ratio_min:0.51,
+    ...(plan.rules||{}),
+    change24h_max:15,max_dist_from_ema21_pct:8,
+    net_inflow_min_usd:0,net_buy_ratio_min:0.51
+  },sort_by:"volume_ratio",reasoning_ur:"Pump se pehle: EMA bullish, vol ≥1.3x, RSI 45-68, 24h ≤15%, EMA21 se 8% andar, net inflow positive"};
+  if(isDip)return{...plan,intent:"scan",rules:{price_above_ema:50,rsi_max:55,near_20_low_pct:5,change24h_min:-25,change24h_max:5,net_inflow_min_usd:0,...(plan.rules||{})},sort_by:"rsi_low"};
   if(isBreak)return{...plan,intent:"scan",rules:{breakout_20:true,volume_ratio_min:1.5,rsi_min:50,rsi_max:78,...(plan.rules||{})}};
   return plan;
 }
@@ -607,7 +617,7 @@ const PLAN_SYSTEM=`You are a crypto screening planner. User writes Roman Urdu / 
 Schema: {intent:"scan"|"coin"|"movers",timeframe:"15m"|"1h"|"4h"|"1d"|"1w",symbol:"BTC"(coin only),movers_by:"gainers"|"losers"|"volume"(movers only),rules:{},sort_by:"score"|"volume_ratio"|"change24h_pct"|"rsi"|"rsi_low"|"volume24h_usd"|"net_inflow_usd",limit:1-15,min_volume_usd:number,reasoning_ur:"one line"}
 Rule keys: ema_stack_bullish,price_above_ema(9|21|50|100|200),price_below_ema,rsi_min,rsi_max,volume_ratio_min,breakout_20,near_20_high_pct,near_20_low_pct,change24h_min,change24h_max,funding_max_pct,funding_min_pct,hammer,ema_cross_within,max_dist_from_ema21_pct,max_risk_pct,net_inflow_min_usd,net_buy_ratio_min
 CRITICAL:
-- "pump se pehle" → intent=scan, rules: ema_stack_bullish=true,volume_ratio_min=1.3,rsi_min=45,rsi_max=68,change24h_max=15,max_dist_from_ema21_pct=8
+- "pump se pehle" → intent=scan, rules: ema_stack_bullish=true,volume_ratio_min=1.3,rsi_min=45,rsi_max=68,change24h_max=15,max_dist_from_ema21_pct=8,net_inflow_min_usd=0,net_buy_ratio_min=0.51
 - "top gainers/losers/volume" → intent=movers
 - single coin name → intent=coin
 - vague ("acha coin do") → scan with ema_stack_bullish=true,volume_ratio_min=1.5,rsi_min=50,rsi_max=70,change24h_max=20
@@ -651,7 +661,7 @@ async function aiReport(text,plan,scan){
   return await aiChat([{role:"system",content:REPORT_SYSTEM},{role:"user",content:JSON.stringify(payload)}]);
 }
 
-/* ============ RENDER ============ */
+/* ============ Render ============ */
 function fUSD(x){const a=Math.abs(x);if(a>=1e9)return(a/1e9).toFixed(2)+"B";if(a>=1e6)return(a/1e6).toFixed(2)+"M";if(a>=1e3)return(a/1e3).toFixed(1)+"K";return a.toFixed(0)}
 function fUSDs(x){return(x>=0?"+":"-")+"$"+fUSD(x)}
 function fNum(x){return x==null?"—":(+x).toLocaleString("en-US",{maximumFractionDigits:6})}
@@ -720,7 +730,7 @@ function renderPicks(s){
   return h+'</div>';
 }
 
-/* ============ CHAT ============ */
+/* ============ Chat ============ */
 const chatEl=document.getElementById("chat");
 let history=[];
 function addMsg(role,html){if(chatEl.querySelector(".empty"))chatEl.innerHTML="";const d=document.createElement("div");d.className="msg "+role;d.innerHTML=html;chatEl.appendChild(d);d.scrollIntoView({behavior:"smooth",block:"nearest"});return d}
