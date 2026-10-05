@@ -78,16 +78,24 @@ h2{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size
 .think.on{border-color:var(--screen);border-style:solid}
 .signin{width:100%;padding:14px;margin-bottom:10px;font-size:16px;font-weight:bold;background:var(--screen);color:#fff;border:0;border-radius:6px;cursor:pointer;font-family:"Atkinson Hyperlegible",sans-serif}
 .signin.done{background:var(--up);cursor:default}
+.botline{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.botline:last-child{border-bottom:0}
+.botline .who{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;color:var(--screen);min-width:70px;flex:none}
+.botline .what{flex:1}
+.bt{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:8px 0;background:var(--bg)}
+.bt b{font-family:"Pixelify Sans","Courier New",monospace}
+.bt .wr{font-family:"Pixelify Sans","Courier New",monospace;font-size:20px;color:var(--up);font-weight:600}
+.bt .wl{color:var(--muted);font-size:13px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Crypto Bot Team</h1>
-  <p class="sub">Asli AI — koi API key nahi. Pehle Sign In karein (ek dafa), phir AI hukm samajh kar khud coins deta hai.</p>
+  <p class="sub">Asli AI + team discussion + backtest. Pehle Sign In karein, phir hukm dein.</p>
 
   <details class="cfg" id="cfg">
     <summary>Setup & info</summary>
-    <p><b>AI:</b> Puter.js (free, browser mein chalti hai). Pehli dafa Sign In button dabayein — Google ya email se login karein.</p>
+    <p><b>AI:</b> Puter.js (free). Pehli dafa 🔑 Sign In button dabayein.</p>
     <label for="model">AI model</label>
     <select id="model">
       <option value="">Default (jo Puter de)</option>
@@ -97,8 +105,8 @@ h2{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size
       <option value="claude-sonnet-4">Claude Sonnet 4</option>
       <option value="deepseek-chat">DeepSeek Chat</option>
     </select>
-    <p><b>Data:</b> Live Binance se (public endpoints, koi key nahi).</p>
-    <p><b>AI ka kaam:</b> 1) Aap ke hukm se scan plan banata hai. 2) Scan ke natije parh kar Roman Urdu report likhta hai.</p>
+    <p><b>Data:</b> Live Binance se (public endpoints).</p>
+    <p><b>Kaam ka flow:</b> AI plan → team discussion (bots apni raaye dete hain) → scan → backtest → final report.</p>
   </details>
 
   <div class="office" id="office"><canvas id="cv" width="192" height="120"></canvas></div>
@@ -237,7 +245,6 @@ function tick(now){
 }
 requestAnimationFrame(tick);
 
-/* log */
 const logEl = document.getElementById("log");
 function log(msg, err=false){
   if(logEl.querySelector(".empty")) logEl.innerHTML = "";
@@ -262,7 +269,7 @@ function md(text){
   return html;
 }
 
-/* ---------- Binance data (public) ---------- */
+/* ---------- Binance ---------- */
 const SOURCES = [
   {name:"Binance Futures", base:"https://www.binance.com/fapi/v1", futures:true},
   {name:"Binance Futures", base:"https://fapi.binance.com/fapi/v1", futures:true},
@@ -289,7 +296,7 @@ async function source(){
     try { await getJSON(s.base + "/ticker/price?symbol=BTCUSDT"); SRC = s; modeEl.textContent = "Live: " + s.name; modeEl.className = "mode live"; return s; }
     catch(e){ if(e.name==="AbortError") throw e; }
   }
-  throw new Error("Binance tak rabta nahi ho saka. File ko phone ke Chrome mein kholein.");
+  throw new Error("Binance tak rabta nahi ho saka.");
 }
 const tickers = async () => { const s = await source(); return cached("tk", 60e3, () => getJSON(s.base + "/ticker/24hr")); };
 const fundingAll = async () => { const s = await source(); if(!s.futures) return {}; try { return await cached("fr", 120e3, async () => { const m = {}; (await getJSON(s.base + "/premiumIndex")).forEach(p => m[p.symbol] = +p.lastFundingRate); return m; }); } catch(e){ if(e.name==="AbortError") throw e; return {}; } };
@@ -344,14 +351,14 @@ function setProgress(p){ bar.style.width = (p*100) + "%"; }
 
 async function tool_scan(inp){
   const tf = ["15m","1h","4h","1d","1w"].includes(inp.timeframe) ? inp.timeframe : "4h";
-  const minV = inp.min_volume_usd ?? 5e6, maxC = Math.min(inp.max_coins ?? 150, 400), rules = inp.rules || {};
-  await goDesk(mgr); say(mgr,"Binance se coins la rahi hoon…",0);
+  const minV = inp.min_volume_usd ?? 5e6, maxC = Math.min(inp.max_coins ?? 200, 400), rules = inp.rules || {};
+  await goDesk(mgr); say(mgr,"Binance se coins…",0);
   const tk = await tickers(), now = Date.now();
   let uni = tk.filter(t => t.symbol.endsWith("USDT") && !t.symbol.includes("_") && !STABLE.test(t.symbol)
     && (!t.closeTime || now-t.closeTime < 2*3600e3) && +t.quoteVolume >= minV)
     .sort((a,b)=>b.quoteVolume-a.quoteVolume).slice(0, maxC);
-  say(mgr, uni.length + " coins team ko de diye", 3000);
-  await goDesk(risk); setState(risk,"work"); say(risk,"Funding check…",0);
+  say(mgr, uni.length + " coins mil gaye", 3000);
+  await goDesk(risk); setState(risk,"work"); say(risk,"Funding…",0);
   const fr = await fundingAll();
   await Promise.all([goDesk(trd), goDesk(vol)]); setState(trd,"work"); setState(vol,"work");
   const all=[]; let done=0;
@@ -361,16 +368,16 @@ async function tool_scan(inp){
     const res = await Promise.allSettled(b.map(t=>klines(t.symbol, tf)));
     res.forEach((r,j)=>{ if(r.status==="fulfilled"){ const m=metrics(b[j].symbol, r.value, b[j], fr[b[j].symbol] ?? null); if(m) all.push(m); } else if(r.reason?.name==="AbortError") throw r.reason; });
     done+=b.length; setProgress(done/uni.length);
-    say(trd,"Charts "+done+"/"+uni.length,0); say(vol, all.filter(m=>m.volume_ratio>=2).length+" volume spikes",0);
-    await sleep(180);
+    say(trd,"Charts "+done+"/"+uni.length,0); say(vol, all.filter(m=>m.volume_ratio>=2).length+" spikes",0);
+    await sleep(150);
   }
   const funnel = {}; Object.keys(rules).forEach(k => { if(RULES[k]) funnel[k] = all.filter(m => RULES[k](m, rules[k])).length; });
   const unknown = Object.keys(rules).filter(k => !RULES[k]);
   let hits = all.filter(m => Object.entries(rules).every(([k,v]) => !RULES[k] || RULES[k](m,v)));
-  say(risk, hits.length+" coins rules pass", 0);
+  say(risk, hits.length+" pass", 0);
   const sortBy = inp.sort_by || "score";
   hits.sort((a,b)=> sortBy==="rsi_low" ? a.rsi-b.rsi : (b[sortBy] ?? b.score) - (a[sortBy] ?? a.score));
-  [trd,vol,risk].forEach(a=>{ setState(a,"done"); say(a,"Mukammal ✓"); });
+  [trd,vol,risk].forEach(a=>{ setState(a,"done"); say(a,"✓"); });
   log("Scan " + tf.toUpperCase() + ": " + all.length + " check, " + hits.length + " pass.");
   return {timeframe:tf, scanned:all.length, matched:hits.length, rule_pass_counts:funnel, unknown_rules_ignored:unknown,
     results: hits.slice(0, Math.min(inp.limit ?? 8, 20))};
@@ -378,11 +385,11 @@ async function tool_scan(inp){
 async function tool_coin(inp){
   const sym = String(inp.symbol||"").toUpperCase().replace(/[^A-Z0-9]/g,"").replace(/(USDT)?$/,"USDT");
   const tf = inp.timeframe || "4h";
-  await goDesk(trd); setState(trd,"work"); say(trd, sym.replace("USDT","") + " ka chart…",0);
+  await goDesk(trd); setState(trd,"work"); say(trd, sym.replace("USDT","") + "…",0);
   const tk = (await tickers()).find(t=>t.symbol===sym);
-  if(!tk){ setState(trd,"done"); return {error: sym + " Binance par nahi mila"}; }
+  if(!tk){ setState(trd,"done"); return {error: sym + " nahi mila"}; }
   const fr = await fundingAll(); const m = metrics(sym, await klines(sym, tf), tk, fr[sym] ?? null);
-  setState(trd,"done"); say(trd,"Mukammal ✓");
+  setState(trd,"done"); say(trd,"✓");
   return {timeframe:tf, ...m};
 }
 async function tool_movers(inp){
@@ -391,13 +398,86 @@ async function tool_movers(inp){
   let tk = (await tickers()).filter(t=>t.symbol.endsWith("USDT") && !t.symbol.includes("_") && !STABLE.test(t.symbol) && +t.quoteVolume>=minV && (!t.closeTime || Date.now()-t.closeTime<2*3600e3));
   const by = inp.by || "gainers";
   tk.sort((a,b)=> by==="losers" ? a.priceChangePercent-b.priceChangePercent : by==="volume" ? b.quoteVolume-a.quoteVolume : b.priceChangePercent-a.priceChangePercent);
-  setState(vol,"done"); say(vol,"Mukammal ✓");
+  setState(vol,"done"); say(vol,"✓");
   return tk.slice(0, Math.min(inp.limit ?? 10, 25)).map(t=>({symbol:t.symbol, price:+t.lastPrice, change24h_pct:+(+t.priceChangePercent).toFixed(2), volume24h_usd:Math.round(+t.quoteVolume)}));
 }
 
-/* ====================================================================
-   AI via Puter.js
-   ==================================================================== */
+/* ============ BACKTEST ============ */
+/* Strategy ko historical candles par replay karta hai.
+   Har candle par rules check, agar match hua to agle 20 candles mein
+   target (1:2) pehle aaya (WIN) ya stop pehle aaya (LOSS) ya dono nahi (NEUTRAL). */
+async function backtest(symbol, tf, rules, lookback=100, horizon=20){
+  const k = await klines(symbol, tf);
+  const n = k.length;
+  if(n < lookback + horizon + 30) return {symbol, error:"Not enough history"};
+  const simT = {priceChangePercent: 0, quoteVolume: 1e9}; // placeholder for metrics() signature
+  const start = n - lookback - horizon;
+  let wins=0, losses=0, neutral=0, signals=0;
+  const trades = [];
+  for(let i=start; i<n-horizon; i++){
+    const slice = k.slice(0, i+1); // candles up to and including i
+    const m = metrics(symbol, slice, simT, null);
+    if(!m) continue;
+    const ok = Object.entries(rules).every(([key,val]) => !RULES[key] || RULES[key](m, val));
+    if(!ok) continue;
+    signals++;
+    const entry = m.price;
+    const stop = m.stop;
+    const target = m.target_1to2;
+    // look at next `horizon` candles (from i+1)
+    let result = "neutral", exitAt = null;
+    for(let j=i+1; j<=i+horizon; j++){
+      const hi = +k[j][2], lo = +k[j][3];
+      const hitTarget = hi >= target;
+      const hitStop = lo <= stop;
+      if(hitTarget && hitStop){ result = "loss"; exitAt = j; break; } // pessimistic: stop first if both same candle
+      if(hitTarget){ result = "win"; exitAt = j; break; }
+      if(hitStop){ result = "loss"; exitAt = j; break; }
+    }
+    if(result === "win") wins++;
+    else if(result === "loss") losses++;
+    else neutral++;
+    if(trades.length < 3) trades.push({entry, stop, target, result, candlesHeld: exitAt ? exitAt-i : null});
+  }
+  const decided = wins + losses;
+  return {symbol, tf, lookback, horizon, signals, wins, losses, neutral,
+    winRate: decided ? +(wins/decided*100).toFixed(1) : null, trades};
+}
+
+/* ============ TEAM DISCUSSION ============ */
+/* Scan ke natije par har bot apni asli observation chat mein post karta hai. */
+async function teamDiscuss(scanResult){
+  const lines = [];
+  const coins = scanResult.results || [];
+  if(!coins.length) return lines;
+
+  // Bilal (Volume)
+  const topVol = [...coins].sort((a,b)=>b.volume_ratio-a.volume_ratio)[0];
+  lines.push({agent: vol, text: `Top volume ratio: <b>${topVol.symbol}</b> ${topVol.volume_ratio}x avg. ${coins.filter(c=>c.volume_ratio>=2).length} coins 2x+ pe.`});
+
+  // Hamza (Trend)
+  const bull = coins.filter(c=>c.ema_stack_bullish).length;
+  const avgRsi = (coins.reduce((a,c)=>a+c.rsi,0)/coins.length).toFixed(1);
+  const bo = coins.filter(c=>c.breakout_20).length;
+  lines.push({agent: trd, text: `${bull}/${coins.length} EMA bullish, avg RSI ${avgRsi}, ${bo} breakout. Best trend: <b>${[...coins].sort((a,b)=>b.score-a.score)[0].symbol}</b>.`});
+
+  // Sara (Risk)
+  const risks = coins.map(c=>c.risk_pct).filter(x=>x!=null);
+  const avgRisk = risks.length ? (risks.reduce((a,b)=>a+b,0)/risks.length).toFixed(2) : "—";
+  const lowRisk = coins.filter(c=>c.risk_pct<=5).length;
+  lines.push({agent: risk, text: `Avg risk ${avgRisk}%. ${lowRisk}/${coins.length} coins 5% se kam risk wale.`});
+
+  return lines;
+}
+function renderTeamLines(lines){
+  if(!lines.length) return "";
+  return '<div style="margin:10px 0;padding:8px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--line)">' +
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:700">💬 TEAM DISCUSSION</div>' +
+    lines.map(l => '<div class="botline"><span class="who">'+esc(l.agent.name)+'</span><span class="what">'+l.text+'</span></div>').join("") +
+    '</div>';
+}
+
+/* ============ AI ============ */
 function getModel(){ try { return localStorage.getItem("cbt_model_puter") || ""; } catch { return ""; } }
 document.getElementById("model").value = getModel();
 document.getElementById("model").addEventListener("change", e => {
@@ -438,7 +518,6 @@ function extractText(resp){
   return "";
 }
 
-/* ---------- SIGN IN ---------- */
 const signInSlot = document.getElementById("signInSlot");
 let signInBtn = null;
 function makeSignInBtn(){
@@ -450,14 +529,14 @@ function makeSignInBtn(){
     try {
       log("Sign-in popup khul raha hai…");
       await puter.auth.signIn();
-      log("✅ Sign in kamyab! Ab hukm bhejein.");
+      log("✅ Sign in kamyab!");
       signInBtn.textContent = "✅ Sign in ho gaya — ab hukm bhejein";
       signInBtn.classList.add("done");
       signInBtn.disabled = true;
     } catch(e){
       const m = errMsg(e);
-      if(/popup_blocked|popup/i.test(m)) log("Popup block ho gaya. Chrome mein popups allow karein.", true);
-      else if(/auth_window_closed|cancel/i.test(m)) log("Aap ne sign-in cancel kar diya. Dobara try karein.", true);
+      if(/popup_blocked|popup/i.test(m)) log("Popup block. Chrome mein popups allow karein.", true);
+      else if(/auth_window_closed|cancel/i.test(m)) log("Sign-in cancel kiya.", true);
       else log("Sign in error: " + m, true);
     }
   });
@@ -468,7 +547,7 @@ async function checkSignIn(){
     if(typeof puter === "undefined" || !puter.auth){ makeSignInBtn(); return; }
     if(typeof puter.auth.isSignedIn === "function" && puter.auth.isSignedIn()){
       const user = (typeof puter.auth.getUser === "function") ? await puter.auth.getUser().catch(()=>null) : null;
-      log("✅ Pehle se signed in" + (user && user.username ? " (" + user.username + ")" : "") + ". Ab hukm bhej sakte hain.");
+      log("✅ Pehle se signed in" + (user && user.username ? " (" + user.username + ")" : "") + ".");
       return;
     }
     makeSignInBtn();
@@ -481,8 +560,7 @@ setTimeout(checkSignIn, 800);
 
 async function aiChat(messages, {json=false} = {}){
   if(typeof puter === "undefined" || !puter.ai)
-    throw new Error("Puter load nahi hua. Page refresh karein (internet check).");
-
+    throw new Error("Puter load nahi hua. Page refresh karein.");
   if(puter.auth && typeof puter.auth.isSignedIn === "function" && !puter.auth.isSignedIn())
     throw new Error("Pehle upar wala 🔑 Sign In button dabayein, phir hukm bhejein.");
 
@@ -505,54 +583,102 @@ async function aiChat(messages, {json=false} = {}){
       lastErr = e;
       const m = errMsg(e);
       log("AI fail (" + (o.model||"default") + "): " + m, true);
-      if(/sign|auth|login|permission|unauthor/i.test(m)){
-        throw new Error("Sign in zaroori hai. Upar wala 🔑 button dabayein, phir dobara bhejein.");
-      }
+      if(/sign|auth|login|permission|unauthor/i.test(m))
+        throw new Error("Sign in zaroori. 🔑 button dabayein, phir dobara bhejein.");
     }
   }
   throw new Error("AI jawab nahi de saka. Aakhri wajah: " + errMsg(lastErr));
 }
 
-const PLAN_SYSTEM = `You are a crypto screening planner. The user writes in Roman Urdu / English. Convert their request into a JSON scan plan.
+/* ============ CODE-LEVEL GUARDS ============ */
+/* "Pump se pehle" jaisi phrases par AI galat intent chunta hai.
+   Yeh function code-level par force karta hai ke intent=scan rahe
+   aur "already pumped" coins filter ho jayein. */
+function prepumpGuard(text, plan){
+  const t = text.toLowerCase();
+  const isPrepump = /pump\s*se\s*(pehle|phle|pahle|pehlay)|before\s*pump|pre[- ]?pump/i.test(t);
+  const isDip = /\bdip\b|\bsupport\s*ke?\s*paas\b|\bpullback\b|\bretrace\b/i.test(t);
+  const isBreakout = /\bbreakout\b|\bbreak\s*out\b/i.test(t);
 
-OUTPUT: Only valid JSON. No prose, no markdown fences. Schema:
+  if(isPrepump){
+    return {
+      intent: "scan",
+      timeframe: plan.timeframe || "4h",
+      rules: {
+        ema_stack_bullish: true,
+        volume_ratio_min: 1.3,
+        rsi_min: 45, rsi_max: 68,
+        change24h_min: -5,
+        change24h_max: 15,          // ← "already pumped" filter
+        max_dist_from_ema21_pct: 8, // ← overextended filter
+        ...(plan.rules || {}),
+        // force these to override whatever AI said
+        change24h_max: 15,
+        max_dist_from_ema21_pct: 8
+      },
+      sort_by: "volume_ratio",
+      limit: plan.limit || 5,
+      min_volume_usd: plan.min_volume_usd || 5e6,
+      reasoning_ur: "Pump se pehle: EMA bullish, vol ≥1.3x, RSI 45-68, 24h ≤15%, EMA21 se 8% andar (already-pumped coins filter)"
+    };
+  }
+  if(isDip){
+    return {
+      ...plan,
+      intent: "scan",
+      rules: {
+        price_above_ema: 50,
+        rsi_max: 55,
+        near_20_low_pct: 5,
+        change24h_min: -25,
+        change24h_max: 5,
+        ...(plan.rules || {})
+      },
+      sort_by: "rsi_low",
+      limit: plan.limit || 5
+    };
+  }
+  if(isBreakout){
+    return {
+      ...plan,
+      intent: "scan",
+      rules: {
+        breakout_20: true,
+        volume_ratio_min: 1.5,
+        rsi_min: 50, rsi_max: 78,
+        ...(plan.rules || {})
+      }
+    };
+  }
+  return plan;
+}
+
+const PLAN_SYSTEM = `You are a crypto screening planner. The user writes in Roman Urdu / English. Output ONLY valid JSON, no prose, no markdown fences.
+
+Schema:
 {
   "intent": "scan" | "coin" | "movers",
   "timeframe": "15m"|"1h"|"4h"|"1d"|"1w",
   "symbol": "BTC" (only if intent=coin),
   "movers_by": "gainers"|"losers"|"volume" (only if intent=movers),
-  "rules": {
-    "ema_stack_bullish": true|false,
-    "price_above_ema": 9|21|50|100|200,
-    "price_below_ema": 9|21|50|100|200,
-    "rsi_min": number, "rsi_max": number,
-    "volume_ratio_min": number,
-    "breakout_20": true|false,
-    "near_20_high_pct": number,
-    "near_20_low_pct": number,
-    "change24h_min": number, "change24h_max": number,
-    "funding_max_pct": number, "funding_min_pct": number,
-    "hammer": true|false,
-    "ema_cross_within": number,
-    "max_dist_from_ema21_pct": number,
-    "max_risk_pct": number
-  },
+  "rules": { ...any subset of rule keys... },
   "sort_by": "score"|"volume_ratio"|"change24h_pct"|"rsi"|"rsi_low"|"volume24h_usd",
-  "limit": number (1-15),
+  "limit": 1-15,
   "min_volume_usd": number,
-  "reasoning_ur": "ek line Roman Urdu mein ke kya samjhe"
+  "reasoning_ur": "ek line Roman Urdu mein"
 }
 
-RULES:
-- Only include fields you are confident about. Omit others.
-- If user is vague ('potential coins do', 'acha coin do', 'kuch batao'), pick sensible momentum rules: ema_stack_bullish=true, volume_ratio_min=1.5, rsi_min=50, rsi_max=70, change24h_max=20.
-- 'pump se pehle' -> ema_stack_bullish=true, volume_ratio_min=1.3, rsi_min=45, rsi_max=68, change24h_max=15, near_20_high_pct=8.
-- 'support ke paas' / 'dip' -> near_20_low_pct=3, rsi_max=55.
-- 'breakout' -> breakout_20=true, volume_ratio_min=1.5.
-- If user names a single coin -> intent=coin, symbol=TICKER (BTC, ETH, SOL...).
-- If user asks top gainers/losers/volume -> intent=movers.
-- Default timeframe if unclear: 4h.
-- Default limit: 5.`;
+Rule keys allowed:
+ema_stack_bullish (bool), price_above_ema (9|21|50|100|200), price_below_ema (same), rsi_min, rsi_max, volume_ratio_min, breakout_20 (bool), near_20_high_pct, near_20_low_pct, change24h_min, change24h_max, funding_max_pct, funding_min_pct, hammer (bool), ema_cross_within, max_dist_from_ema21_pct, max_risk_pct.
+
+CRITICAL RULES:
+- "pump se pehle" / "before pump" → intent=scan. NEVER movers. Rules: ema_stack_bullish=true, volume_ratio_min=1.3, rsi_min=45, rsi_max=68, change24h_max=15, max_dist_from_ema21_pct=8. This EXCLUDES already-pumped coins.
+- "support ke paas" / "dip" / "pullback" → near_20_low_pct=3, rsi_max=55, price_above_ema=50.
+- "breakout" → breakout_20=true, volume_ratio_min=1.5.
+- "top gainers" / "top losers" / "volume leaders" → intent=movers.
+- If user names a single coin → intent=coin, symbol=TICKER.
+- Vague ("acha coin do") → intent=scan, rules: ema_stack_bullish=true, volume_ratio_min=1.5, rsi_min=50, rsi_max=70, change24h_max=20.
+- Default timeframe: 4h. Default limit: 5.`;
 
 async function aiPlan(text){
   const raw = await aiChat([
@@ -561,23 +687,24 @@ async function aiPlan(text){
   ], {json:true});
   const cleaned = raw.replace(/```json|```/g,"").trim();
   const start = cleaned.indexOf("{"); const end = cleaned.lastIndexOf("}");
-  if(start<0 || end<0) throw new Error("AI ne plan nahi diya. Dobara likhein.");
-  const obj = JSON.parse(cleaned.slice(start, end+1));
-  return obj;
+  if(start<0 || end<0) throw new Error("AI ne plan nahi diya.");
+  return JSON.parse(cleaned.slice(start, end+1));
 }
 
-const REPORT_SYSTEM = `You are Ayesha, manager of a crypto bot team. The user speaks Roman Urdu + English. Write the final answer in simple Roman Urdu with English technical terms.
+const REPORT_SYSTEM = `You are Ayesha, manager of a crypto bot team. User speaks Roman Urdu + English. Write the final answer in simple Roman Urdu.
 
-You will receive: (a) the user's original request, (b) the scan plan the AI made, (c) the LIVE Binance data (coins, prices, RSI, EMA, volume, stop, target).
+You receive: (a) user request, (b) plan, (c) LIVE scan data with FULL metrics per coin (price, rsi, volume_ratio, ema_stack_bullish, breakout_20, dist_to_20_high_pct, dist_from_20_low_pct, change24h_pct, stop, target_1to2, score), (d) backtest results per top pick (signals, wins, losses, neutral, winRate).
 
 HARD RULES:
-- NEVER invent a coin, price or number. Only use data given to you.
-- If matched=0, honestly say no coin passed; list which rule was strictest from rule_pass_counts; suggest what to relax.
-- Format: start with one line "Kya kiya" (timeframe + rules). Then each coin as '### TICKER (score/100)' with 2-4 '- ' bullets: why it qualifies (RSI, volume, EMA, breakout), the numbers, and stop + 1:2 target from the data. If higher_timeframe_confirm exists, add one bullet about it.
-- Max 280 words. Simple Roman Urdu.
-- Finish with exactly: "Yeh financial advice nahi hai."`;
+- NEVER invent a coin, price or number. ONLY use data given.
+- DO NOT say "data missing" — every field you need is in the JSON. If a coin lacks a field, skip it and use the next one.
+- Format per coin: '### TICKER (score/100)' then 3-4 '- ' bullets: WHY it qualifies (which rules passed + actual numbers like RSI 58, vol 2.3x, EMA bullish, 24h +6%), stop $X (risk Y%), 1:2 target $Z, and BACKTEST result: "Backtest: N signals, win rate W% (wins/losses/neutral)".
+- If backtest winRate < 40% or signals < 3, warn the user honestly.
+- If matched=0, say so and list rule_pass_counts from the data.
+- Max 320 words. Simple Roman Urdu.
+- Finish exactly: "Yeh financial advice nahi hai."`;
 
-async function aiReport(userText, plan, scanResult, higherTF){
+async function aiReport(userText, plan, scanResult, higherTF, backtests){
   const payload = {
     user_request: userText,
     plan: plan,
@@ -588,7 +715,8 @@ async function aiReport(userText, plan, scanResult, higherTF){
       rule_pass_counts: scanResult.rule_pass_counts,
       coins: scanResult.results.slice(0, 8)
     },
-    higher_timeframe_confirm: higherTF || null
+    higher_timeframe_confirm: higherTF || null,
+    backtests: backtests || null
   };
   const raw = await aiChat([
     {role:"system", content:REPORT_SYSTEM},
@@ -610,9 +738,7 @@ async function confirmHigherTF(picks, currentTf){
   return Object.keys(out).length ? out : null;
 }
 
-/* ====================================================================
-   CHAT
-   ==================================================================== */
+/* ============ CHAT ============ */
 const chatEl = document.getElementById("chat");
 let history = [];
 function addMsg(role, html){
@@ -644,10 +770,17 @@ async function send(text){
   AGENTS.forEach(a => setState(a,"idle"));
 
   try {
-    await goDesk(mgr); setState(mgr,"work"); say(mgr,"AI hukm samajh rahi hai…",0);
+    await goDesk(mgr); setState(mgr,"work"); say(mgr,"Hukm samajh rahi hoon…",0);
 
-    work.innerHTML = '<div class="think on">🧠 AI hukm parh rahi hai…</div>';
-    const plan = await aiPlan(text);
+    /* Step 1: AI plan */
+    work.innerHTML = '<div class="think on">🧠 AI plan bana rahi hai…</div>';
+    let plan = await aiPlan(text);
+    /* Code-level guard: pump se pehle wagerah */
+    const before = JSON.stringify(plan.rules||{});
+    plan = prepumpGuard(text, plan);
+    if(JSON.stringify(plan.rules||{}) !== before){
+      log("Guard ne plan theek kiya: " + JSON.stringify(plan.rules));
+    }
     log("AI plan: " + JSON.stringify(plan));
     if(plan.reasoning_ur) say(mgr, plan.reasoning_ur.slice(0,60), 5000);
 
@@ -657,12 +790,13 @@ async function send(text){
       (plan.intent==="movers" ? '<span class="tag">movers: '+esc(plan.movers_by||"gainers")+'</span>' : '');
 
     work.innerHTML =
-      '<div class="round ok"><b>AI ne samjha:</b> ' + esc(plan.reasoning_ur || "plan bana liya") + '</div>' +
+      '<div class="round ok"><b>AI ne samjha:</b> ' + esc(plan.reasoning_ur || "plan ready") + '</div>' +
       (planChips ? '<div>'+planChips+'</div>' : '') +
       '<div id="scanSlot"></div>';
 
+    /* Step 2: scan */
     const slot = work.querySelector("#scanSlot");
-    let scanResult, higher = null;
+    let scanResult, higher = null, backtests = null;
     if(plan.intent === "coin" && plan.symbol){
       slot.innerHTML = '<p class="empty">Ek coin check…</p>';
       const r = await tool_coin({symbol:plan.symbol, timeframe:plan.timeframe || "4h"});
@@ -682,28 +816,54 @@ async function send(text){
         min_volume_usd: plan.min_volume_usd || 5e6,
         max_coins: 200
       });
-      if(scanResult.matched > 0){
-        slot.innerHTML += '<div class="round"><b>Higher timeframe confirm</b>…</div>';
-        higher = await confirmHigherTF(scanResult.results.slice(0,5), scanResult.timeframe);
-      }
     }
 
+    /* Step 3: Team discussion — bots apni observation post karte hain */
+    if(scanResult.results && scanResult.results.length){
+      slot.innerHTML += '<div class="think on">💬 Team discuss kar rahi hai…</div>';
+      await sleep(300);
+      const lines = await teamDiscuss(scanResult);
+      slot.innerHTML += renderTeamLines(lines);
+      log("Team discussion ho gayi: " + lines.length + " raaye");
+    }
+
+    /* Step 4: higher TF + backtest */
+    if(scanResult.matched > 0 && !scanResult.movers){
+      slot.innerHTML += '<div class="round"><b>Higher timeframe confirm</b> + <b>Backtest</b>…</div>';
+      await goDesk(rank); setState(rank,"work");
+      higher = await confirmHigherTF(scanResult.results.slice(0,5), scanResult.timeframe);
+      backtests = [];
+      for(const pick of scanResult.results.slice(0,3)){
+        try {
+          const bt = await backtest(pick.symbol, scanResult.timeframe, plan.rules || {}, 100, 20);
+          backtests.push(bt);
+          const wr = bt.winRate!=null ? bt.winRate+"%" : "—";
+          log("Backtest " + pick.symbol + ": " + bt.signals + " signals, win " + bt.wins + " / loss " + bt.losses + " / neutral " + bt.neutral + " (WR " + wr + ")");
+          slot.innerHTML += '<div class="bt"><b>Backtest '+esc(pick.symbol)+'</b> ('+scanResult.timeframe.toUpperCase()+', last 100 candles)<br>' +
+            '<span class="wr">'+(bt.winRate!=null ? bt.winRate+'% win rate' : '—')+'</span> ' +
+            '<span class="wl">'+bt.signals+' signals · '+bt.wins+' win · '+bt.losses+' loss · '+bt.neutral+' neutral</span></div>';
+        } catch(e){ log("Backtest fail " + pick.symbol + ": " + errMsg(e), true); }
+      }
+      setState(rank,"done");
+    }
+
+    /* Step 5: AI report */
     slot.innerHTML += '<div class="think on">✍️ AI report likh rahi hai…</div>';
-    await goDesk(rank); setState(rank,"work"); say(rank,"AI report likh raha hai…",0);
-    const report = await aiReport(text, plan, scanResult, higher);
+    await goDesk(rank); setState(rank,"work"); say(rank,"Report likh raha hai…",0);
+    const report = await aiReport(text, plan, scanResult, higher, backtests);
 
     work.innerHTML = md(report) + '<p class="small">Live: ' + new Date().toLocaleTimeString() + ', ' + (SRC ? SRC.name : "Binance") + ' • AI: ' + esc(getModel() || "default") + '</p>';
-    setState(rank,"done"); say(rank,"Tayyar ✓"); setState(mgr,"done"); say(mgr,"Coins mil gaye!",5000);
+    setState(rank,"done"); say(rank,"✓"); setState(mgr,"done"); say(mgr,"Ho gaya!",5000);
     log("Jawab tayyar.");
     history.push({role:"user", content:text});
     history.push({role:"assistant", content:report});
 
   } catch(e){
-    if(e.name==="AbortError"){ work.innerHTML = '<p class="empty">Kaam rok diya gaya.</p>'; log("Roka gaya."); }
+    if(e.name==="AbortError"){ work.innerHTML = '<p class="empty">Rok diya.</p>'; log("Roka gaya."); }
     else {
       const msg = (e && e.message) || errMsg(e);
       work.innerHTML = '<p class="empty">⚠️ ' + esc(msg) + '</p>' +
-        (/sign|auth|login|puter|🔑/i.test(msg) ? '<p class="small">Upar wala 🔑 Sign In button dabayein, phir dobara "Hukm bhejo" dabayein.</p>' : '');
+        (/sign|auth|login|puter|🔑/i.test(msg) ? '<p class="small">🔑 Sign In button dabayein, phir dobara bhejein.</p>' : '');
       log(msg, true);
     }
     AGENTS.forEach(a => { if(a.state==="work"||a.state==="walk"){ setState(a,"error"); say(a,"Ruk gaya",4000,true); } });
