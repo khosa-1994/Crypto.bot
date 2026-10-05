@@ -3,110 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Crypto Bot Team (AI)</title>
+<title>Crypto Bot Team</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://js.puter.com/v2/"></script>
 <style>
-:root{
-  --bg:#EEF0F6; --panel:#FFFFFF; --ink:#1C2033; --muted:#5B6280; --line:#D5D9E6;
-  --lamp:#E9A23B; --screen:#2FB7A8; --up:#2E9E6A; --down:#C9473F; --paper:#FBF7EE;
-  box-sizing:border-box;
-  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#141726; --panel:#1E2236; --ink:#E8EAF3; --muted:#9AA1BF; --line:#2E3350; --paper:#22263C;
-}}
-:root[data-theme="dark"]{--bg:#141726; --panel:#1E2236; --ink:#E8EAF3; --muted:#9AA1BF; --line:#2E3350; --paper:#22263C;}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+:root{--bg:#EEF0F6;--panel:#FFF;--ink:#1C2033;--muted:#5B6280;--line:#D5D9E6;--lamp:#E9A23B;--screen:#2FB7A8;--up:#2E9E6A;--down:#C9473F;--paper:#FBF7EE;box-sizing:border-box}
+@media(prefers-color-scheme:dark){:root{--bg:#141726;--panel:#1E2236;--ink:#E8EAF3;--muted:#9AA1BF;--line:#2E3350;--paper:#22263C}}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--bg);color:var(--ink);
-  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-size:15px;line-height:1.5}
 .wrap{max-width:760px;margin:0 auto;padding:14px}
-h1{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size:24px;margin:2px 0 2px;letter-spacing:.5px}
+h1{font-family:"Pixelify Sans",monospace;font-weight:600;font-size:24px;margin:2px 0}
 .sub{color:var(--muted);margin:0 0 12px;font-size:14px}
 .office{position:relative;border-radius:6px;overflow:hidden;border:3px solid #2A2E45;background:#232742}
-canvas{display:block;width:100%;aspect-ratio:192/120;image-rendering:pixelated;image-rendering:crisp-edges}
-.bubble{position:absolute;transform:translate(-50%,-100%);background:#FFFDF6;color:#1C2033;
-  font-family:"Pixelify Sans","Courier New",monospace;font-size:11px;line-height:1.2;padding:3px 6px;border-radius:4px;
-  border:2px solid #1C2033;white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:0;transition:opacity .2s}
-.bubble.show{opacity:1}
-.bubble.err{background:#FBE3E1}
-.statusbar{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0 12px;font-size:13px;color:var(--muted)}
-.mode{font-family:"Pixelify Sans","Courier New",monospace;padding:2px 8px;border-radius:3px;border:2px solid var(--line);color:var(--ink)}
-.mode.live{border-color:var(--up)} .mode.offline{border-color:var(--lamp)}
+canvas{display:block;width:100%;aspect-ratio:192/120;image-rendering:pixelated}
+.bubble{position:absolute;transform:translate(-50%,-100%);background:#FFFDF6;color:#1C2033;font-family:"Pixelify Sans",monospace;font-size:11px;padding:3px 6px;border-radius:4px;border:2px solid #1C2033;white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:0;transition:opacity .2s}
+.bubble.show{opacity:1}.bubble.err{background:#FBE3E1}
+.statusbar{display:flex;justify-content:space-between;gap:8px;margin:8px 0 12px;font-size:13px;color:var(--muted)}
+.mode{font-family:"Pixelify Sans",monospace;padding:2px 8px;border-radius:3px;border:2px solid var(--line)}
+.mode.live{border-color:var(--up)}
 .team{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-bottom:14px}
 .member{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 9px;display:flex;gap:8px;align-items:center}
 .dot{width:12px;height:12px;border-radius:2px;flex:none}
-.member b{display:block;font-size:14px}
-.member span{font-size:12px;color:var(--muted)}
-.member.work{border-color:var(--screen)} .member.done{border-color:var(--up)} .member.error{border-color:var(--down)}
+.member b{display:block;font-size:14px}.member span{font-size:12px;color:var(--muted)}
+.member.work{border-color:var(--screen)}.member.done{border-color:var(--up)}.member.error{border-color:var(--down)}
 .ask{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
 label{font-weight:700;font-size:14px;display:block;margin-bottom:6px}
-textarea{width:100%;min-height:70px;resize:vertical;border:1px solid var(--line);border-radius:6px;padding:9px;font:inherit;background:var(--bg);color:var(--ink)}
-textarea:focus-visible,button:focus-visible{outline:3px solid var(--screen);outline-offset:2px}
+textarea{width:100%;min-height:70px;border:1px solid var(--line);border-radius:6px;padding:9px;font:inherit;background:var(--bg);color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
 .chip{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:20px;padding:4px 10px;cursor:pointer}
 .row{display:flex;gap:8px}
-.go{flex:1;font-family:"Pixelify Sans","Courier New",monospace;font-size:17px;border:0;border-radius:6px;padding:11px;background:var(--lamp);color:#1C2033;cursor:pointer}
-.go:disabled{opacity:.5;cursor:not-allowed}
+.go{flex:1;font-family:"Pixelify Sans",monospace;font-size:17px;border:0;border-radius:6px;padding:11px;background:var(--lamp);color:#1C2033;cursor:pointer}
+.go:disabled{opacity:.5}
 .stop{font:inherit;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:0 14px;cursor:pointer}
-h2{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size:18px;margin:18px 0 8px}
+h2{font-family:"Pixelify Sans",monospace;font-weight:600;font-size:18px;margin:18px 0 8px}
 .log{background:#1C2033;color:#CFD5EA;border-radius:6px;padding:10px;font-size:13px;max-height:220px;overflow:auto}
-.log p{margin:0 0 4px} .log .t{color:#7E87AE;margin-right:6px} .log .e{color:#F08B83}
+.log p{margin:0 0 4px}.log .t{color:#7E87AE;margin-right:6px}.log .e{color:#F08B83}
 .empty{color:var(--muted)}
 .prog{height:8px;background:var(--line);border-radius:4px;margin:10px 0 0;overflow:hidden}
 .prog i{display:block;height:100%;width:0;background:var(--screen);transition:width .2s}
-.cfg summary{cursor:pointer;font-weight:700}
 .cfg{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px}
-.cfg p{font-size:13px;color:var(--muted);margin:4px 0}
+.cfg summary{cursor:pointer;font-weight:700}
 .cfg select{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
 .chat{display:flex;flex-direction:column;gap:10px}
 .msg{border-radius:8px;padding:10px 12px;border:1px solid var(--line)}
 .msg.u{background:var(--panel);align-self:flex-end;max-width:90%}
 .msg.a{background:var(--paper)}
-.msg.a h3{font-size:16px;margin:10px 0 4px}
-.msg.a ul{margin:4px 0;padding-left:20px}
-.msg.a p{margin:6px 0}
+.msg.a h3{font-size:16px;margin:10px 0 4px}.msg.a ul{margin:4px 0;padding-left:20px}.msg.a p{margin:6px 0}
 .small{font-size:12px;color:var(--muted);margin-top:6px}
-.tag{display:inline-block;font-size:12px;font-family:"Pixelify Sans","Courier New",monospace;
-  background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin:0 4px 4px 0}
+.tag{display:inline-block;font-size:12px;font-family:"Pixelify Sans",monospace;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin:0 4px 4px 0}
 .round{border-left:3px solid var(--line);padding:6px 0 6px 10px;margin:8px 0}
-.round.ok{border-color:var(--up)} .round.warn{border-color:var(--lamp)} .round.bad{border-color:var(--down)}
-.round b{font-family:"Pixelify Sans","Courier New",monospace}
+.round.ok{border-color:var(--up)}.round.warn{border-color:var(--lamp)}.round.bad{border-color:var(--down)}
+.round b{font-family:"Pixelify Sans",monospace}
 .think{background:var(--bg);border:1px dashed var(--line);border-radius:6px;padding:8px 10px;margin:6px 0;font-size:13px;color:var(--muted)}
 .think.on{border-color:var(--screen);border-style:solid}
-.signin{width:100%;padding:14px;margin-bottom:10px;font-size:16px;font-weight:bold;background:var(--screen);color:#fff;border:0;border-radius:6px;cursor:pointer;font-family:"Atkinson Hyperlegible",sans-serif}
-.signin.done{background:var(--up);cursor:default}
+.signin{width:100%;padding:14px;margin-bottom:10px;font-size:16px;font-weight:bold;background:var(--screen);color:#fff;border:0;border-radius:6px;cursor:pointer;font-family:inherit}
+.signin.done{background:var(--up)}
 .botline{display:flex;gap:8px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
-.botline:last-child{border-bottom:0}
-.botline .who{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;color:var(--screen);min-width:70px;flex:none}
+.botline .who{font-family:"Pixelify Sans",monospace;font-weight:600;color:var(--screen);min-width:70px}
 .botline .what{flex:1}
-.bt{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:8px 0;background:var(--bg)}
-.bt b{font-family:"Pixelify Sans","Courier New",monospace}
-.bt .wr{font-family:"Pixelify Sans","Courier New",monospace;font-size:20px;color:var(--up);font-weight:600}
+.bt,.sect{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:8px 0;background:var(--bg)}
+.sect{background:var(--panel);padding:10px 12px}
+.sect h4{margin:0 0 6px;font-family:"Pixelify Sans",monospace;font-size:14px}
+.bt b{font-family:"Pixelify Sans",monospace}
+.bt .wr{font-family:"Pixelify Sans",monospace;font-size:20px;color:var(--up);font-weight:600}
 .bt .wl{color:var(--muted);font-size:13px}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th,.tbl td{padding:5px 6px;text-align:left;border-bottom:1px solid var(--line)}
+.tbl th{font-family:"Pixelify Sans",monospace;font-size:12px;color:var(--muted);font-weight:600}
+.tbl td.num{text-align:right;font-family:"Pixelify Sans",monospace}
+.tbl td.up{color:var(--up)}.tbl td.dn{color:var(--down)}
+.mtf{display:inline-block;font-family:"Pixelify Sans",monospace;font-size:11px;padding:1px 5px;border-radius:3px;background:var(--bg);border:1px solid var(--line);margin:1px 2px}
+.mtf.up{color:var(--up);border-color:var(--up)}
+.mtf.dn{color:var(--down);border-color:var(--down)}
+.badge{display:inline-block;font-size:11px;padding:1px 6px;border-radius:3px;background:var(--bg);border:1px solid var(--line);margin-right:4px}
+.badge.fut{background:#E7EEF4;color:#2C6A9E;border-color:#2C6A9E}
+.badge.sp{background:#EDE7F4;color:#6A2C9E;border-color:#6A2C9E}
+@media(prefers-color-scheme:dark){.badge.fut{background:#162636}.badge.sp{background:#241636}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Crypto Bot Team</h1>
-  <p class="sub">Asli AI + team discussion + backtest. Pehle Sign In karein, phir hukm dein.</p>
+  <p class="sub">Futures + Spot, saare coins, net inflow, whales, aur 5 timeframes. Pehle Sign In karein.</p>
 
-  <details class="cfg" id="cfg">
+  <details class="cfg">
     <summary>Setup & info</summary>
     <p><b>AI:</b> Puter.js (free). Pehli dafa 🔑 Sign In button dabayein.</p>
     <label for="model">AI model</label>
     <select id="model">
-      <option value="">Default (jo Puter de)</option>
-      <option value="gpt-4o-mini">GPT-4o mini (tez, reliable)</option>
+      <option value="">Default</option>
+      <option value="gpt-4o-mini">GPT-4o mini</option>
       <option value="gpt-4o">GPT-4o</option>
       <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
       <option value="claude-sonnet-4">Claude Sonnet 4</option>
-      <option value="deepseek-chat">DeepSeek Chat</option>
+      <option value="deepseek-chat">DeepSeek</option>
     </select>
-    <p><b>Data:</b> Live Binance se (public endpoints).</p>
-    <p><b>Kaam ka flow:</b> AI plan → team discussion (bots apni raaye dete hain) → scan → backtest → final report.</p>
+    <label for="minVol" style="margin-top:10px">Min 24h volume (USD)</label>
+    <select id="minVol">
+      <option value="1000000">$1M+ (sabse zyada coins ~500)</option>
+      <option value="2000000" selected>$2M+ (default ~450)</option>
+      <option value="5000000">$5M+ (~300)</option>
+      <option value="10000000">$10M+ (~200)</option>
+    </select>
+    <p>Futures + Spot dono scan hote hain. Net inflow taker buy/sell se, whales aggTrades se.</p>
   </details>
 
   <div class="office" id="office"><canvas id="cv" width="192" height="120"></canvas></div>
@@ -118,778 +118,625 @@ h2{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size
     <textarea id="task" placeholder="Misal: Pump se pehle wale coins do jisme volume acha ho"></textarea>
     <div class="chips" id="chips"></div>
     <div id="signInSlot"></div>
-    <div class="row">
-      <button class="go" id="go">Hukm bhejo</button>
-      <button class="stop" id="stop" disabled>Roko</button>
-    </div>
-    <div class="prog" aria-hidden="true"><i id="bar"></i></div>
+    <div class="row"><button class="go" id="go">Hukm bhejo</button><button class="stop" id="stop" disabled>Roko</button></div>
+    <div class="prog"><i id="bar"></i></div>
   </div>
 
   <h2>Baat cheet</h2>
-  <div class="chat" id="chat"><p class="empty">Hukm dein — AI khud samjhega aur coins dega.</p></div>
-  <p><button class="chip" id="reset" type="button">Nayi baat shuru karein</button></p>
+  <div class="chat" id="chat"><p class="empty">Hukm dein.</p></div>
+  <p><button class="chip" id="reset" type="button">Nayi baat</button></p>
 
   <h2>Bots ka log</h2>
-  <div class="log" id="log"><p class="empty">Abhi koi kaam nahi chal raha.</p></div>
+  <div class="log" id="log"><p class="empty">Kuch nahi chal raha.</p></div>
 </div>
 <script>
 (() => {
 "use strict";
-const W = 192, H = 120;
-const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
-const office = document.getElementById("office");
-
-const AGENTS = [
-  {id:"mgr",  name:"Ayesha", role:"Manager (AI)",       hair:"#2B1A12", shirt:"#C0504D", skin:"#E8B48A", desk:[30,46]},
-  {id:"news", name:"Bilal",  role:"Volume bot",         hair:"#151515", shirt:"#3F7FBF", skin:"#C98E63", desk:[72,46]},
-  {id:"mkt",  name:"Hamza",  role:"Trend bot",          hair:"#5A3A1A", shirt:"#3FA37A", skin:"#D9A273", desk:[114,46]},
-  {id:"risk", name:"Sara",   role:"Risk bot",           hair:"#7A2E1A", shirt:"#8A5FBF", skin:"#EDC19B", desk:[156,46]},
-  {id:"wri",  name:"Usman",  role:"Ranking & report",   hair:"#222222", shirt:"#D99A2B", skin:"#B97D55", desk:[96,92]}
+const W=192,H=120,cv=document.getElementById("cv"),ctx=cv.getContext("2d"),office=document.getElementById("office");
+const AGENTS=[
+  {id:"mgr",name:"Ayesha",role:"Manager (AI)",hair:"#2B1A12",shirt:"#C0504D",skin:"#E8B48A",desk:[30,46]},
+  {id:"news",name:"Bilal",role:"Volume bot",hair:"#151515",shirt:"#3F7FBF",skin:"#C98E63",desk:[72,46]},
+  {id:"mkt",name:"Hamza",role:"Trend bot",hair:"#5A3A1A",shirt:"#3FA37A",skin:"#D9A273",desk:[114,46]},
+  {id:"risk",name:"Sara",role:"Risk bot",hair:"#7A2E1A",shirt:"#8A5FBF",skin:"#EDC19B",desk:[156,46]},
+  {id:"wri",name:"Usman",role:"Ranking",hair:"#222",shirt:"#D99A2B",skin:"#B97D55",desk:[96,92]}
 ];
-const rand = (a,b) => a + Math.random()*(b-a);
-function homeSpot(){ return Math.random()<.5 ? [rand(12,56), rand(98,112)] : [rand(136,182), rand(98,112)]; }
-
-AGENTS.forEach(a => {
-  const [hx,hy] = homeSpot();
-  Object.assign(a, {x:hx, y:hy, tx:hx, ty:hy, state:"idle", walkT:0, wait:rand(60,200), arrivers:[], bubbleUntil:0});
-  const b = document.createElement("div"); b.className = "bubble"; office.appendChild(b); a.bubbleEl = b;
-});
-const team = document.getElementById("team");
-AGENTS.forEach(a => {
-  const d = document.createElement("div"); d.className = "member"; d.id = "m-" + a.id;
-  d.innerHTML = `<i class="dot" style="background:${a.shirt}"></i><div><b></b><span></span></div>`;
-  d.querySelector("b").textContent = a.name;
-  d.querySelector("span").textContent = a.role + " (idle)";
-  team.appendChild(d); a.card = d;
-});
-function setState(a, s){
-  a.state = s;
-  a.card.className = "member " + (s==="work"?"work":s==="done"?"done":s==="error"?"error":"");
-  const label = {idle:"idle", walk:"aa raha hai", work:"kaam kar raha hai", done:"mukammal", error:"masla aaya"}[s] || s;
-  a.card.querySelector("span").textContent = a.role + " (" + label + ")";
-  const busy = AGENTS.filter(x => x.state==="work"||x.state==="walk").length;
-  document.getElementById("counts").textContent = (AGENTS.length-busy) + " idle, " + busy + " busy";
-}
-function say(a, text, ms=3500, err=false){
-  a.bubbleEl.textContent = text;
-  a.bubbleEl.classList.toggle("err", err);
-  a.bubbleEl.classList.add("show");
-  a.bubbleUntil = ms ? performance.now()+ms : Infinity;
-}
-function goTo(a, x, y){
-  a.tx = x; a.ty = y; setState(a, "walk");
-  return new Promise(res => a.arrivers.push(res));
-}
-const goDesk = a => goTo(a, a.desk[0], a.desk[1]+9);
-function goHome(a){ const [x,y] = homeSpot(); goTo(a,x,y).then(() => setState(a,"idle")); }
-
-function px(c,x,y,w,h){ ctx.fillStyle=c; ctx.fillRect(Math.round(x),Math.round(y),w,h); }
-let frame = 0;
-function drawRoom(){
-  px("#2A2F48",0,0,W,H);
-  for(let y=26;y<H;y+=8) for(let x=0;x<W;x+=8) if(((x+y)/8)%2===0) px("#2E3350",x,y,8,8);
-  px("#3B4063",0,0,W,26); px("#262A42",0,24,W,2);
-  px("#1A1E33",6,4,30,15); px("#0F1226",8,6,26,11);
-  [[11,8],[20,12],[29,9],[15,14],[26,7]].forEach(([x,y],i)=>{ if((frame>>4)%3!==i%3) px("#F3E9B5",x,y,1,1); });
-  px("#C9CEDD",64,4,52,16); px("#F4F5F9",65,5,50,14);
-  px("#C0504D",68,8,18,1); px("#3F7FBF",68,11,26,1); px("#3FA37A",68,14,14,1);
-  px("#14172A",130,4,52,17);
-  for(let i=0;i<9;i++){
-    const h = 3 + ((i*7 + (frame>>5)) % 8), up = (i + (frame>>6)) % 3 !== 0;
-    px(up?"#2E9E6A":"#C9473F", 134+i*5, 18-h, 3, h);
-  }
-  [[2,28],[184,28]].forEach(([x,y])=>{ px("#8A5A3A",x+1,y+7,5,5); px("#3E8E5A",x,y,7,7); px("#56A872",x+2,y+1,3,3); });
-  px("#3A3352",8,96,52,18); px("#6A4E8A",12,112,44,5); px("#7C5C9E",12,109,44,3);
-  px("#3A3352",132,96,54,18); px("#55596F",178,90,8,10); px("#E9A23B",180,93,4,2);
-  px("#8A6A48",146,102,16,6);
-}
-function drawDesk(a){
-  const [dx,dy] = a.desk, active = a.state==="work";
-  px("#1D2030",dx-5,dy-8,10,7);
-  let scr = "#30364F";
-  if(active) scr = (frame>>3)%2 ? "#2FB7A8" : "#4FD1C5";
-  else if(a.state==="done") scr = "#2E9E6A";
-  else if(a.state==="error") scr = "#C9473F";
-  px(scr,dx-4,dy-7,8,5); px("#1D2030",dx-1,dy-1,2,1);
-  px("#8A6A48",dx-11,dy,22,6); px("#6E5238",dx-11,dy+6,22,1);
-  px("#5B6280",dx-3,dy+9,7,6);
-}
-function drawAgent(a){
-  const x = Math.round(a.x), y = Math.round(a.y), working = a.state==="work"||a.state==="done"||a.state==="error";
-  const moving = Math.hypot(a.tx-a.x, a.ty-a.y) > .5;
-  const step = moving ? ((frame>>3)%2) : 0;
-  const bob = (a.state==="work" && (frame>>2)%2) ? 1 : 0;
-  ctx.fillStyle="rgba(0,0,0,.25)"; ctx.fillRect(x-3,y,7,1);
-  px("#2A2A3A",x-2,y-3+step,2,3); px("#2A2A3A",x+1,y-3+(1-step),2,3);
-  px(a.shirt,x-3,y-8+bob,7,5);
-  px(a.skin,x-2,y-13+bob,5,5);
-  if(working) px(a.hair,x-2,y-13+bob,5,5);
-  else { px(a.hair,x-2,y-13+bob,5,2); px("#1C2033",x-1,y-10+bob,1,1); px("#1C2033",x+1,y-10+bob,1,1); }
-  if(a.state==="done"){ px("#2E9E6A",x+3,y-17,1,1); px("#2E9E6A",x+4,y-16,1,1); px("#2E9E6A",x+5,y-17,1,1); px("#2E9E6A",x+6,y-18,1,1); }
-}
-function tick(now){
-  frame++;
-  AGENTS.forEach(a => {
-    const dx=a.tx-a.x, dy=a.ty-a.y, d=Math.hypot(dx,dy);
-    if(d>.5){ const s=Math.min(.7,d); a.x+=dx/d*s; a.y+=dy/d*s; }
-    else if(a.arrivers.length){ a.x=a.tx; a.y=a.ty; const r=a.arrivers.splice(0); r.forEach(f=>f()); }
-    else if(a.state==="idle" && --a.wait<=0){ const [hx,hy]=homeSpot(); a.tx=hx; a.ty=hy; a.wait=rand(120,320); }
-    if(now > a.bubbleUntil) a.bubbleEl.classList.remove("show");
-    a.bubbleEl.style.left = (a.x/W*100)+"%";
-    a.bubbleEl.style.top = ((a.y-15)/H*100)+"%";
-  });
-  drawRoom();
-  AGENTS.forEach(drawDesk);
-  [...AGENTS].sort((p,q)=>p.y-q.y).forEach(drawAgent);
-  requestAnimationFrame(tick);
-}
+const rand=(a,b)=>a+Math.random()*(b-a);
+function homeSpot(){return Math.random()<.5?[rand(12,56),rand(98,112)]:[rand(136,182),rand(98,112)]}
+AGENTS.forEach(a=>{const[hx,hy]=homeSpot();Object.assign(a,{x:hx,y:hy,tx:hx,ty:hy,state:"idle",wait:rand(60,200),arrivers:[],bubbleUntil:0});const b=document.createElement("div");b.className="bubble";office.appendChild(b);a.bubbleEl=b});
+const team=document.getElementById("team");
+AGENTS.forEach(a=>{const d=document.createElement("div");d.className="member";d.innerHTML=`<i class="dot" style="background:${a.shirt}"></i><div><b></b><span></span></div>`;d.querySelector("b").textContent=a.name;d.querySelector("span").textContent=a.role+" (idle)";team.appendChild(d);a.card=d});
+function setState(a,s){a.state=s;a.card.className="member "+(s==="work"?"work":s==="done"?"done":s==="error"?"error":"");const L={idle:"idle",walk:"aa raha",work:"kaam",done:"mukammal",error:"masla"}[s]||s;a.card.querySelector("span").textContent=a.role+" ("+L+")";const b=AGENTS.filter(x=>x.state==="work"||x.state==="walk").length;document.getElementById("counts").textContent=(AGENTS.length-b)+" idle, "+b+" busy"}
+function say(a,t,ms=3500,err=false){a.bubbleEl.textContent=t;a.bubbleEl.classList.toggle("err",err);a.bubbleEl.classList.add("show");a.bubbleUntil=ms?performance.now()+ms:Infinity}
+function goTo(a,x,y){a.tx=x;a.ty=y;setState(a,"walk");return new Promise(r=>a.arrivers.push(r))}
+const goDesk=a=>goTo(a,a.desk[0],a.desk[1]+9);
+function goHome(a){const[x,y]=homeSpot();goTo(a,x,y).then(()=>setState(a,"idle"))}
+function px(c,x,y,w,h){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),w,h)}
+let frame=0;
+function drawRoom(){px("#2A2F48",0,0,W,H);for(let y=26;y<H;y+=8)for(let x=0;x<W;x+=8)if(((x+y)/8)%2===0)px("#2E3350",x,y,8,8);px("#3B4063",0,0,W,26);px("#262A42",0,24,W,2);px("#1A1E33",6,4,30,15);px("#0F1226",8,6,26,11);[[11,8],[20,12],[29,9],[15,14],[26,7]].forEach(([x,y],i)=>{if((frame>>4)%3!==i%3)px("#F3E9B5",x,y,1,1)});px("#C9CEDD",64,4,52,16);px("#F4F5F9",65,5,50,14);px("#C0504D",68,8,18,1);px("#3F7FBF",68,11,26,1);px("#3FA37A",68,14,14,1);px("#14172A",130,4,52,17);for(let i=0;i<9;i++){const h=3+((i*7+(frame>>5))%8),u=(i+(frame>>6))%3!==0;px(u?"#2E9E6A":"#C9473F",134+i*5,18-h,3,h)}[[2,28],[184,28]].forEach(([x,y])=>{px("#8A5A3A",x+1,y+7,5,5);px("#3E8E5A",x,y,7,7);px("#56A872",x+2,y+1,3,3)});px("#3A3352",8,96,52,18);px("#6A4E8A",12,112,44,5);px("#3A3352",132,96,54,18);px("#55596F",178,90,8,10);px("#E9A23B",180,93,4,2);px("#8A6A48",146,102,16,6)}
+function drawDesk(a){const[dx,dy]=a.desk,ac=a.state==="work";px("#1D2030",dx-5,dy-8,10,7);let s="#30364F";if(ac)s=(frame>>3)%2?"#2FB7A8":"#4FD1C5";else if(a.state==="done")s="#2E9E6A";else if(a.state==="error")s="#C9473F";px(s,dx-4,dy-7,8,5);px("#1D2030",dx-1,dy-1,2,1);px("#8A6A48",dx-11,dy,22,6);px("#5B6280",dx-3,dy+9,7,6)}
+function drawAgent(a){const x=Math.round(a.x),y=Math.round(a.y),w=a.state==="work"||a.state==="done"||a.state==="error";const m=Math.hypot(a.tx-a.x,a.ty-a.y)>.5;const st=m?(frame>>3)%2:0;const bob=(a.state==="work"&&(frame>>2)%2)?1:0;ctx.fillStyle="rgba(0,0,0,.25)";ctx.fillRect(x-3,y,7,1);px("#2A2A3A",x-2,y-3+st,2,3);px("#2A2A3A",x+1,y-3+(1-st),2,3);px(a.shirt,x-3,y-8+bob,7,5);px(a.skin,x-2,y-13+bob,5,5);if(w)px(a.hair,x-2,y-13+bob,5,5);else{px(a.hair,x-2,y-13+bob,5,2);px("#1C2033",x-1,y-10+bob,1,1);px("#1C2033",x+1,y-10+bob,1,1)}if(a.state==="done"){px("#2E9E6A",x+3,y-17,1,1);px("#2E9E6A",x+4,y-16,1,1);px("#2E9E6A",x+5,y-17,1,1)}}
+function tick(now){frame++;AGENTS.forEach(a=>{const dx=a.tx-a.x,dy=a.ty-a.y,d=Math.hypot(dx,dy);if(d>.5){const s=Math.min(.7,d);a.x+=dx/d*s;a.y+=dy/d*s}else if(a.arrivers.length){a.x=a.tx;a.y=a.ty;const r=a.arrivers.splice(0);r.forEach(f=>f())}else if(a.state==="idle"&&--a.wait<=0){const[hx,hy]=homeSpot();a.tx=hx;a.ty=hy;a.wait=rand(120,320)}if(now>a.bubbleUntil)a.bubbleEl.classList.remove("show");a.bubbleEl.style.left=(a.x/W*100)+"%";a.bubbleEl.style.top=((a.y-15)/H*100)+"%"});
+drawRoom();AGENTS.forEach(drawDesk);[...AGENTS].sort((p,q)=>p.y-q.y).forEach(drawAgent);requestAnimationFrame(tick)}
 requestAnimationFrame(tick);
 
-const logEl = document.getElementById("log");
-function log(msg, err=false){
-  if(logEl.querySelector(".empty")) logEl.innerHTML = "";
-  const p = document.createElement("p"); if(err) p.className = "e";
-  const t = document.createElement("span"); t.className = "t";
-  t.textContent = new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
-  p.append(t, document.createTextNode(msg)); logEl.appendChild(p); logEl.scrollTop = logEl.scrollHeight;
+const logEl=document.getElementById("log");
+function log(m,e=false){if(logEl.querySelector(".empty"))logEl.innerHTML="";const p=document.createElement("p");if(e)p.className="e";const t=document.createElement("span");t.className="t";t.textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit",second:"2-digit"});p.append(t,document.createTextNode(m));logEl.appendChild(p);logEl.scrollTop=logEl.scrollHeight}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function md(t){const ls=esc(t).split("\n");let h="",il=false;const inl=s=>s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");for(const r of ls){const l=r.trim();if(/^[-*•]\s+/.test(l)){if(!il){h+="<ul>";il=true}h+="<li>"+inl(l.replace(/^[-*•]\s+/,""))+"</li>";continue}if(il){h+="</ul>";il=false}if(!l)continue;if(/^#{1,4}\s/.test(l))h+="<h3>"+inl(l.replace(/^#{1,4}\s/,""))+"</h3>";else h+="<p>"+inl(l)+"</p>"}if(il)h+="</ul>";return h}
+
+/* ============ DATA LAYER: FUTURES + SPOT ============ */
+const FUT_BASES=["https://fapi.binance.com/fapi/v1","https://www.binance.com/fapi/v1"];
+const SPOT_BASE="https://data-api.binance.vision/api/v3";
+const STABLE=/^(USDC|FDUSD|TUSD|BUSD|DAI|USDP|USDE|EUR|AEUR|USD1|XUSD|BFUSD|PYUSD|RLUSD|USDS)USDT$/;
+const modeEl=document.getElementById("mode"),bar=document.getElementById("bar");
+const goBtn=document.getElementById("go"),stopBtn=document.getElementById("stop"),taskEl=document.getElementById("task");
+const[mgr,vol,trd,risk,rank]=AGENTS;
+let controller=null,SRC_FUT=null,SRC_SPOT=null,cache={};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function getJSON(url){const r=await fetch(url,{signal:controller.signal,cache:"no-store"});if(!r.ok)throw new Error("HTTP "+r.status);return r.json()}
+async function cached(k,ttl,fn){const c=cache[k];if(c&&Date.now()-c.t<ttl)return c.v;const v=await fn();cache[k]={t:Date.now(),v};return v}
+
+async function initSources(){
+  for(const b of FUT_BASES){try{await getJSON(b+"/ticker/price?symbol=BTCUSDT");SRC_FUT=b;break}catch(e){if(e.name==="AbortError")throw e}}
+  try{await getJSON(SPOT_BASE+"/ticker/price?symbol=BTCUSDT");SRC_SPOT=SPOT_BASE}catch(e){if(e.name==="AbortError")throw e}
+  if(!SRC_FUT&&!SRC_SPOT)throw new Error("Binance tak rabta nahi ho saka.");
+  const parts=[];if(SRC_FUT)parts.push("Futures");if(SRC_SPOT)parts.push("Spot");
+  modeEl.textContent="Live: "+parts.join(" + ");modeEl.className="mode live";
 }
-function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-function md(text){
-  const lines = esc(text).split("\n"); let html = "", inList = false;
-  const inline = s => s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
-  for(const raw of lines){
-    const l = raw.trim();
-    if(/^[-*•]\s+/.test(l)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+inline(l.replace(/^[-*•]\s+/,""))+"</li>"; continue; }
-    if(inList){ html+="</ul>"; inList=false; }
-    if(!l) continue;
-    if(/^#{1,4}\s/.test(l)) html += "<h3>"+inline(l.replace(/^#{1,4}\s/,""))+"</h3>";
-    else html += "<p>"+inline(l)+"</p>";
+async function fetchAllTickers(){
+  await initSources();
+  const out=[];
+  if(SRC_FUT){
+    try{const r=await getJSON(SRC_FUT+"/ticker/24hr");r.forEach(t=>out.push({...t,market:"futures"}))}
+    catch(e){if(e.name==="AbortError")throw e;log("Futures ticker: "+e.message,true)}
   }
-  if(inList) html += "</ul>";
-  return html;
-}
-
-/* ---------- Binance ---------- */
-const SOURCES = [
-  {name:"Binance Futures", base:"https://www.binance.com/fapi/v1", futures:true},
-  {name:"Binance Futures", base:"https://fapi.binance.com/fapi/v1", futures:true},
-  {name:"Binance Spot", base:"https://data-api.binance.vision/api/v3", futures:false}
-];
-const STABLE = /^(USDC|FDUSD|TUSD|BUSD|DAI|USDP|USDE|EUR|AEUR|USD1|XUSD|BFUSD|PYUSD|RLUSD|USDS)USDT$/;
-const modeEl = document.getElementById("mode"), bar = document.getElementById("bar");
-const goBtn = document.getElementById("go"), stopBtn = document.getElementById("stop"), taskEl = document.getElementById("task");
-const [mgr, vol, trd, risk, rank] = AGENTS;
-let controller = null, SRC = null, cache = {};
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-async function getJSON(url){
-  const r = await fetch(url, {signal: controller.signal, cache: "no-store"});
-  if(!r.ok) throw new Error("HTTP " + r.status);
-  return r.json();
-}
-async function cached(key, ttl, fn){
-  const c = cache[key]; if(c && Date.now()-c.t < ttl) return c.v;
-  const v = await fn(); cache[key] = {t:Date.now(), v}; return v;
-}
-async function source(){
-  if(SRC) return SRC;
-  for(const s of SOURCES){
-    try { await getJSON(s.base + "/ticker/price?symbol=BTCUSDT"); SRC = s; modeEl.textContent = "Live: " + s.name; modeEl.className = "mode live"; return s; }
-    catch(e){ if(e.name==="AbortError") throw e; }
+  if(SRC_SPOT){
+    try{const r=await getJSON(SPOT_BASE+"/ticker/24hr");r.forEach(t=>out.push({...t,market:"spot"}))}
+    catch(e){if(e.name==="AbortError")throw e;log("Spot ticker: "+e.message,true)}
   }
-  throw new Error("Binance tak rabta nahi ho saka.");
+  return out;
 }
-const tickers = async () => { const s = await source(); return cached("tk", 60e3, () => getJSON(s.base + "/ticker/24hr")); };
-const fundingAll = async () => { const s = await source(); if(!s.futures) return {}; try { return await cached("fr", 120e3, async () => { const m = {}; (await getJSON(s.base + "/premiumIndex")).forEach(p => m[p.symbol] = +p.lastFundingRate); return m; }); } catch(e){ if(e.name==="AbortError") throw e; return {}; } };
-const klines = async (sym, tf) => { const s = await source(); return cached("k"+sym+tf, 90e3, () => getJSON(s.base + "/klines?symbol=" + sym + "&interval=" + tf + "&limit=210")); };
-
-function ema(a, p){ const k = 2/(p+1); let e = a[0]; const out = [e]; for(let i=1;i<a.length;i++){ e = a[i]*k + e*(1-k); out.push(e); } return out; }
-function rsi(c, p=14){ let g=0,l=0; for(let i=1;i<=p;i++){ const d=c[i]-c[i-1]; d>0?g+=d:l-=d; } g/=p; l/=p;
-  for(let i=p+1;i<c.length;i++){ const d=c[i]-c[i-1]; g=(g*(p-1)+Math.max(d,0))/p; l=(l*(p-1)+Math.max(-d,0))/p; } return l===0?100:100-100/(1+g/l); }
-const r4 = x => x==null ? null : +(+x).toPrecision(5);
-
-function metrics(sym, k, t, fr){
-  const h=k.map(x=>+x[2]), l=k.map(x=>+x[3]), o=k.map(x=>+x[1]), c=k.map(x=>+x[4]), v=k.map(x=>+x[7]);
-  const n=c.length; if(n<60) return null;
-  const E = p => ema(c,p), e9a=E(9), e21a=E(21);
-  const close=c[n-1], e9=e9a[n-1], e21=e21a[n-1], e50=E(50)[n-1], e100=E(100)[n-1], e200 = n>=200 ? E(200)[n-1] : null;
-  const base=v.slice(n-22,n-2), avgV=base.reduce((a,b)=>a+b,0)/base.length;
-  const vr = avgV ? Math.max(v[n-1],v[n-2])/avgV : 0;
-  const hh=Math.max(...h.slice(n-21,n-1)), ll=Math.min(...l.slice(n-21,n-1));
-  let crossAge=null; for(let i=n-1;i>n-12;i--){ if(e9a[i]>e21a[i] && e9a[i-1]<=e21a[i-1]){ crossAge=n-1-i; break; } }
-  const j=n-2, body=Math.abs(c[j]-o[j]), lw=Math.min(o[j],c[j])-l[j], uw=h[j]-Math.max(o[j],c[j]);
-  const hammer = body>0 && lw>=2*body && uw<=body;
-  const R = rsi(c), chg=+t.priceChangePercent, ext=(close/e21-1)*100;
-  let s=0; if(close>e9)s+=8; if(e9>e21)s+=8; if(e21>e50)s+=8; if(close>e50)s+=6;
-  if(vr>1) s+=Math.min(30,(vr-1)*20); if(close>hh)s+=20; else if(close>=hh*0.98)s+=10;
-  if(R>=50&&R<68)s+=15; else if(R>=68&&R<78)s+=6; else if(R>=78)s-=10; else if(R>=45)s+=5;
-  if(fr!=null&&fr>0.0005)s-=8; if(chg>20)s-=10; if(ext>15)s-=8; s=Math.max(0,Math.min(100,Math.round(s)));
-  const swing=Math.min(...l.slice(n-10)); let stop=Math.min(swing,e21)*0.99; if(stop>=close) stop=close*0.95;
-  return {symbol:sym, score:s, price:r4(close), change24h_pct:+chg.toFixed(2), volume24h_usd:Math.round(+t.quoteVolume),
-    volume_ratio:+vr.toFixed(2), rsi:+R.toFixed(1), ema9:r4(e9), ema21:r4(e21), ema50:r4(e50), ema100:r4(e100), ema200:r4(e200),
-    ema_stack_bullish: close>e9&&e9>e21&&e21>e50, breakout_20: close>hh, dist_to_20_high_pct:+((hh/close-1)*100).toFixed(2),
-    dist_from_20_low_pct:+((close/ll-1)*100).toFixed(2), hammer_last_closed:hammer, candles_since_ema9_cross_up_ema21:crossAge,
-    dist_from_ema21_pct:+ext.toFixed(2), funding_pct: fr==null?null:+(fr*100).toFixed(4),
-    stop:r4(stop), risk_pct:+((close-stop)/close*100).toFixed(2), target_1to2:r4(close+2*(close-stop))};
+async function klines(sym,tf,market){
+  const base=market==="spot"?SPOT_BASE:(SRC_FUT||FUT_BASES[0]);
+  return cached("k"+sym+tf+market,90e3,()=>getJSON(base+"/klines?symbol="+sym+"&interval="+tf+"&limit=210"));
 }
-const RULES = {
+async function fundingAll(){
+  if(!SRC_FUT)return{};
+  try{return await cached("fr",120e3,async()=>{const m={};(await getJSON(SRC_FUT+"/premiumIndex")).forEach(p=>m[p.symbol]=+p.lastFundingRate);return m})}
+  catch(e){if(e.name==="AbortError")throw e;return{}}
+}
+
+function ema(a,p){const k=2/(p+1);let e=a[0];const o=[e];for(let i=1;i<a.length;i++){e=a[i]*k+e*(1-k);o.push(e)}return o}
+function rsi(c,p=14){let g=0,l=0;for(let i=1;i<=p;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d}g/=p;l/=p;for(let i=p+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(p-1)+Math.max(d,0))/p;l=(l*(p-1)+Math.max(-d,0))/p}return l===0?100:100-100/(1+g/l)}
+const r4=x=>x==null?null:+(+x).toPrecision(5);
+
+/* Net inflow from klines: taker buy vs taker sell */
+function netInflow(k){
+  const N=Math.min(24,k.length);
+  let buyQ=0,sellQ=0;
+  for(let i=k.length-N;i<k.length;i++){
+    const qv=+k[i][7],tbq=+k[i][10];
+    buyQ+=tbq;sellQ+=Math.max(0,qv-tbq);
+  }
+  const tot=buyQ+sellQ;
+  return{net_usd:buyQ-sellQ,buy_usd:buyQ,sell_usd:sellQ,buy_ratio:tot>0?buyQ/tot:0.5,candles:N};
+}
+
+/* Whale flow from aggTrades (large trades only) */
+async function whaleFlow(sym,market){
+  const base=market==="spot"?SPOT_BASE:(SRC_FUT||FUT_BASES[0]);
+  try{
+    const trades=await cached("ag"+sym+market,30e3,()=>getJSON(base+"/aggTrades?symbol="+sym+"&limit=1000"));
+    if(!trades||!trades.length)return null;
+    const sizes=trades.map(t=>+t.p*+t.q).sort((a,b)=>a-b);
+    const med=sizes[Math.floor(sizes.length/2)]||0;
+    const thr=Math.max(50000,med*20);
+    let buy=0,sell=0,count=0;
+    trades.forEach(t=>{const u=+t.p*+t.q;if(u<thr)return;count++;if(t.m)sell+=u;else buy+=u});
+    return{threshold:thr,count,buy_usd:buy,sell_usd:sell,net_usd:buy-sell};
+  }catch(e){return null}
+}
+
+/* Multi-timeframe summary */
+async function multiTF(sym,market){
+  const tfs=["15m","1h","4h","1d","1w"];
+  const out={};
+  for(const tf of tfs){
+    try{
+      const k=await klines(sym,tf,market);
+      const c=k.map(x=>+x[4]),v=k.map(x=>+x[7]);
+      const n=c.length;
+      const e9=ema(c,9),e21=ema(c,21),e50=ema(c,50);
+      const base=v.slice(n-22,n-2),avg=base.reduce((a,b)=>a+b,0)/base.length||1;
+      const vr=Math.max(v[n-1],v[n-2])/avg;
+      out[tf]={rsi:+rsi(c).toFixed(1),ema_bull:c[n-1]>e9[n-1]&&e9[n-1]>e21[n-1]&&e21[n-1]>e50[n-1],vol_ratio:+vr.toFixed(2),up:c[n-1]>e9[n-1]};
+    }catch(e){out[tf]={error:true}}
+  }
+  return out;
+}
+
+function metrics(sym,k,t,fr){
+  const h=k.map(x=>+x[2]),l=k.map(x=>+x[3]),o=k.map(x=>+x[1]),c=k.map(x=>+x[4]),v=k.map(x=>+x[7]);
+  const n=c.length;if(n<60)return null;
+  const E=p=>ema(c,p),e9a=E(9),e21a=E(21);
+  const close=c[n-1],e9=e9a[n-1],e21=e21a[n-1],e50=E(50)[n-1],e100=E(100)[n-1],e200=n>=200?E(200)[n-1]:null;
+  const base=v.slice(n-22,n-2),avgV=base.reduce((a,b)=>a+b,0)/base.length;
+  const vr=avgV?Math.max(v[n-1],v[n-2])/avgV:0;
+  const hh=Math.max(...h.slice(n-21,n-1)),ll=Math.min(...l.slice(n-21,n-1));
+  let crossAge=null;for(let i=n-1;i>n-12;i--){if(e9a[i]>e21a[i]&&e9a[i-1]<=e21a[i-1]){crossAge=n-1-i;break}}
+  const j=n-2,body=Math.abs(c[j]-o[j]),lw=Math.min(o[j],c[j])-l[j],uw=h[j]-Math.max(o[j],c[j]);
+  const hammer=body>0&&lw>=2*body&&uw<=body;
+  const R=rsi(c),chg=+t.priceChangePercent,ext=(close/e21-1)*100;
+  let s=0;if(close>e9)s+=8;if(e9>e21)s+=8;if(e21>e50)s+=8;if(close>e50)s+=6;
+  if(vr>1)s+=Math.min(30,(vr-1)*20);if(close>hh)s+=20;else if(close>=hh*0.98)s+=10;
+  if(R>=50&&R<68)s+=15;else if(R>=68&&R<78)s+=6;else if(R>=78)s-=10;else if(R>=45)s+=5;
+  if(fr!=null&&fr>0.0005)s-=8;if(chg>20)s-=10;if(ext>15)s-=8;s=Math.max(0,Math.min(100,Math.round(s)));
+  const swing=Math.min(...l.slice(n-10));let stop=Math.min(swing,e21)*0.99;if(stop>=close)stop=close*0.95;
+  return{symbol:sym,score:s,price:r4(close),change24h_pct:+chg.toFixed(2),volume24h_usd:Math.round(+t.quoteVolume),
+    volume_ratio:+vr.toFixed(2),rsi:+R.toFixed(1),ema9:r4(e9),ema21:r4(e21),ema50:r4(e50),
+    ema_stack_bullish:close>e9&&e9>e21&&e21>e50,breakout_20:close>hh,dist_to_20_high_pct:+((hh/close-1)*100).toFixed(2),
+    dist_from_20_low_pct:+((close/ll-1)*100).toFixed(2),hammer_last_closed:hammer,candles_since_ema9_cross_up_ema21:crossAge,
+    dist_from_ema21_pct:+ext.toFixed(2),funding_pct:fr==null?null:+(fr*100).toFixed(4),
+    stop:r4(stop),risk_pct:+((close-stop)/close*100).toFixed(2),target_1to2:r4(close+2*(close-stop)),
+    net_inflow_usd:0,net_buy_ratio:0.5,market:t.market||"futures"};
+}
+const RULES={
   ema_stack_bullish:(m,v)=>m.ema_stack_bullish===v,
-  price_above_ema:(m,v)=>m["ema"+v]!=null && m.price>m["ema"+v],
-  price_below_ema:(m,v)=>m["ema"+v]!=null && m.price<m["ema"+v],
-  rsi_min:(m,v)=>m.rsi>=v, rsi_max:(m,v)=>m.rsi<=v,
+  price_above_ema:(m,v)=>m["ema"+v]!=null&&m.price>m["ema"+v],
+  price_below_ema:(m,v)=>m["ema"+v]!=null&&m.price<m["ema"+v],
+  rsi_min:(m,v)=>m.rsi>=v,rsi_max:(m,v)=>m.rsi<=v,
   volume_ratio_min:(m,v)=>m.volume_ratio>=v,
   breakout_20:(m,v)=>m.breakout_20===v,
-  near_20_high_pct:(m,v)=>m.dist_to_20_high_pct<=v && m.dist_to_20_high_pct>=0,
+  near_20_high_pct:(m,v)=>m.dist_to_20_high_pct<=v&&m.dist_to_20_high_pct>=0,
   near_20_low_pct:(m,v)=>m.dist_from_20_low_pct<=v,
-  change24h_min:(m,v)=>m.change24h_pct>=v, change24h_max:(m,v)=>m.change24h_pct<=v,
-  funding_max_pct:(m,v)=>m.funding_pct==null||m.funding_pct<=v, funding_min_pct:(m,v)=>m.funding_pct!=null&&m.funding_pct>=v,
+  change24h_min:(m,v)=>m.change24h_pct>=v,change24h_max:(m,v)=>m.change24h_pct<=v,
+  funding_max_pct:(m,v)=>m.funding_pct==null||m.funding_pct<=v,funding_min_pct:(m,v)=>m.funding_pct!=null&&m.funding_pct>=v,
   hammer:(m,v)=>m.hammer_last_closed===v,
-  ema_cross_within:(m,v)=>m.candles_since_ema9_cross_up_ema21!=null && m.candles_since_ema9_cross_up_ema21<=v,
+  ema_cross_within:(m,v)=>m.candles_since_ema9_cross_up_ema21!=null&&m.candles_since_ema9_cross_up_ema21<=v,
   max_dist_from_ema21_pct:(m,v)=>Math.abs(m.dist_from_ema21_pct)<=v,
-  max_risk_pct:(m,v)=>m.risk_pct<=v
+  max_risk_pct:(m,v)=>m.risk_pct<=v,
+  net_inflow_min_usd:(m,v)=>m.net_inflow_usd>=v,
+  net_buy_ratio_min:(m,v)=>m.net_buy_ratio>=v
 };
-function setProgress(p){ bar.style.width = (p*100) + "%"; }
+function setProgress(p){bar.style.width=(p*100)+"%"}
 
-async function tool_scan(inp){
-  const tf = ["15m","1h","4h","1d","1w"].includes(inp.timeframe) ? inp.timeframe : "4h";
-  const minV = inp.min_volume_usd ?? 5e6, maxC = Math.min(inp.max_coins ?? 200, 400), rules = inp.rules || {};
-  await goDesk(mgr); say(mgr,"Binance se coins…",0);
-  const tk = await tickers(), now = Date.now();
-  let uni = tk.filter(t => t.symbol.endsWith("USDT") && !t.symbol.includes("_") && !STABLE.test(t.symbol)
-    && (!t.closeTime || now-t.closeTime < 2*3600e3) && +t.quoteVolume >= minV)
-    .sort((a,b)=>b.quoteVolume-a.quoteVolume).slice(0, maxC);
-  say(mgr, uni.length + " coins mil gaye", 3000);
-  await goDesk(risk); setState(risk,"work"); say(risk,"Funding…",0);
-  const fr = await fundingAll();
-  await Promise.all([goDesk(trd), goDesk(vol)]); setState(trd,"work"); setState(vol,"work");
-  const all=[]; let done=0;
+/* ============ FULL SCAN ============ */
+async function tool_fullScan(plan){
+  const tf=["15m","1h","4h","1d","1w"].includes(plan.timeframe)?plan.timeframe:"4h";
+  const minV=plan.min_volume_usd??2e6;
+  const rules=plan.rules||{};
+  const limit=Math.min(plan.limit||5,15);
+
+  await goDesk(mgr);say(mgr,"Futures+Spot universe la rahi hoon…",0);
+  const all=await fetchAllTickers();
+  const now=Date.now();
+  const bySym=new Map();
+  all.forEach(t=>{
+    if(!t.symbol.endsWith("USDT"))return;
+    if(t.symbol.includes("_"))return;
+    if(STABLE.test(t.symbol))return;
+    if(t.closeTime&&now-t.closeTime>2*3600e3)return;
+    if(+t.quoteVolume<minV)return;
+    const prev=bySym.get(t.symbol);
+    if(!prev||+t.quoteVolume>+prev.quoteVolume)bySym.set(t.symbol,t);
+  });
+  const uni=[...bySym.values()].sort((a,b)=>b.quoteVolume-a.quoteVolume);
+  const futCount=uni.filter(x=>x.market==="futures").length;
+  const spCount=uni.length-futCount;
+  log(`Universe: ${uni.length} coins (${futCount} futures, ${spCount} spot)`);
+  say(mgr,uni.length+" coins mil gaye",3000);
+
+  await goDesk(risk);setState(risk,"work");say(risk,"Funding + net flow…",0);
+  const fr=await fundingAll();
+  await Promise.all([goDesk(trd),goDesk(vol)]);setState(trd,"work");setState(vol,"work");
+  const allM=[];let done=0;
   for(let i=0;i<uni.length;i+=10){
-    if(controller.signal.aborted) throw new DOMException("stopped","AbortError");
+    if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
     const b=uni.slice(i,i+10);
-    const res = await Promise.allSettled(b.map(t=>klines(t.symbol, tf)));
-    res.forEach((r,j)=>{ if(r.status==="fulfilled"){ const m=metrics(b[j].symbol, r.value, b[j], fr[b[j].symbol] ?? null); if(m) all.push(m); } else if(r.reason?.name==="AbortError") throw r.reason; });
-    done+=b.length; setProgress(done/uni.length);
-    say(trd,"Charts "+done+"/"+uni.length,0); say(vol, all.filter(m=>m.volume_ratio>=2).length+" spikes",0);
-    await sleep(150);
+    const res=await Promise.allSettled(b.map(t=>klines(t.symbol,tf,t.market)));
+    res.forEach((r,j)=>{
+      if(r.status==="fulfilled"){
+        const m=metrics(b[j].symbol,r.value,b[j],fr[b[j].symbol]??null);
+        if(m){m.market=b[j].market;const ni=netInflow(r.value);m.net_inflow_usd=Math.round(ni.net_usd);m.net_buy_ratio=+ni.buy_ratio.toFixed(3);allM.push(m)}
+      }else if(r.reason?.name==="AbortError")throw r.reason
+    });
+    done+=b.length;setProgress(done/uni.length);
+    if(done%50===0){say(trd,done+"/"+uni.length,0);say(vol,allM.filter(m=>m.volume_ratio>=2).length+" spikes",0)}
+    await sleep(120);
   }
-  const funnel = {}; Object.keys(rules).forEach(k => { if(RULES[k]) funnel[k] = all.filter(m => RULES[k](m, rules[k])).length; });
-  const unknown = Object.keys(rules).filter(k => !RULES[k]);
-  let hits = all.filter(m => Object.entries(rules).every(([k,v]) => !RULES[k] || RULES[k](m,v)));
-  say(risk, hits.length+" pass", 0);
-  const sortBy = inp.sort_by || "score";
-  hits.sort((a,b)=> sortBy==="rsi_low" ? a.rsi-b.rsi : (b[sortBy] ?? b.score) - (a[sortBy] ?? a.score));
-  [trd,vol,risk].forEach(a=>{ setState(a,"done"); say(a,"✓"); });
-  log("Scan " + tf.toUpperCase() + ": " + all.length + " check, " + hits.length + " pass.");
-  return {timeframe:tf, scanned:all.length, matched:hits.length, rule_pass_counts:funnel, unknown_rules_ignored:unknown,
-    results: hits.slice(0, Math.min(inp.limit ?? 8, 20))};
+  log("Scan complete: "+allM.length+" coins ka data");
+  const funnel={};Object.keys(rules).forEach(k=>{if(RULES[k])funnel[k]=allM.filter(m=>RULES[k](m,rules[k])).length});
+  const unknown=Object.keys(rules).filter(k=>!RULES[k]);
+  let hits=allM.filter(m=>Object.entries(rules).every(([k,v])=>!RULES[k]||RULES[k](m,v)));
+  say(risk,hits.length+" pass",0);
+  const sortBy=plan.sort_by||"score";
+  hits.sort((a,b)=>sortBy==="rsi_low"?a.rsi-b.rsi:(b[sortBy]??b.score)-(a[sortBy]??a.score));
+
+  // Net inflow leaders (from ALL scanned coins)
+  const inflowLeaders=[...allM].sort((a,b)=>b.net_inflow_usd-a.net_inflow_usd).slice(0,8);
+
+  // Top picks — enrich
+  const topPicks=hits.slice(0,Math.min(limit,8));
+
+  // Whale flow for top picks
+  say(vol,"Whale flow check…",0);
+  for(const p of topPicks){
+    if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
+    p.whale=await whaleFlow(p.symbol,p.market);
+  }
+  const whaleLeaders=topPicks.filter(p=>p.whale&&p.whale.count>0).sort((a,b)=>(b.whale?.net_usd||0)-(a.whale?.net_usd||0)).slice(0,5);
+
+  // Multi-TF for top 5
+  say(trd,"Multi-timeframe…",0);
+  for(const p of topPicks.slice(0,5)){
+    if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
+    p.multiTF=await multiTF(p.symbol,p.market);
+  }
+
+  // Backtest for top 3
+  for(const p of topPicks.slice(0,3)){
+    if(controller.signal.aborted)throw new DOMException("stopped","AbortError");
+    try{p.backtest=await backtest(p.symbol,tf,rules,100,20,p.market)}catch(e){p.backtest={error:e.message}}
+  }
+
+  [trd,vol,risk].forEach(a=>{setState(a,"done");say(a,"✓")});
+  return{timeframe:tf,universe:uni.length,universe_futures:futCount,universe_spot:spCount,
+    scanned:allM.length,matched:hits.length,rule_pass_counts:funnel,unknown_rules_ignored:unknown,
+    results:topPicks,inflow_leaders:inflowLeaders,whale_leaders:whaleLeaders};
 }
+
 async function tool_coin(inp){
-  const sym = String(inp.symbol||"").toUpperCase().replace(/[^A-Z0-9]/g,"").replace(/(USDT)?$/,"USDT");
-  const tf = inp.timeframe || "4h";
-  await goDesk(trd); setState(trd,"work"); say(trd, sym.replace("USDT","") + "…",0);
-  const tk = (await tickers()).find(t=>t.symbol===sym);
-  if(!tk){ setState(trd,"done"); return {error: sym + " nahi mila"}; }
-  const fr = await fundingAll(); const m = metrics(sym, await klines(sym, tf), tk, fr[sym] ?? null);
-  setState(trd,"done"); say(trd,"✓");
-  return {timeframe:tf, ...m};
+  const sym=String(inp.symbol||"").toUpperCase().replace(/[^A-Z0-9]/g,"").replace(/(USDT)?$/,"USDT");
+  const tf=inp.timeframe||"4h";
+  await goDesk(trd);setState(trd,"work");say(trd,sym.replace("USDT","")+"…",0);
+  const tk=(await fetchAllTickers()).find(t=>t.symbol===sym);
+  if(!tk){setState(trd,"done");return{error:sym+" nahi mila"}}
+  const fr=await fundingAll();
+  const k=await klines(sym,tf,tk.market);
+  const m=metrics(sym,k,tk,fr[sym]??null);
+  if(!m){setState(trd,"done");return{error:sym+" data kam"}}
+  const ni=netInflow(k);m.net_inflow_usd=Math.round(ni.net_usd);m.net_buy_ratio=+ni.buy_ratio.toFixed(3);
+  m.whale=await whaleFlow(sym,tk.market);
+  m.multiTF=await multiTF(sym,tk.market);
+  setState(trd,"done");say(trd,"✓");
+  return{timeframe:tf,...m};
 }
 async function tool_movers(inp){
-  await goDesk(vol); setState(vol,"work"); say(vol,"Top movers…",0);
-  const minV = inp.min_volume_usd ?? 5e6;
-  let tk = (await tickers()).filter(t=>t.symbol.endsWith("USDT") && !t.symbol.includes("_") && !STABLE.test(t.symbol) && +t.quoteVolume>=minV && (!t.closeTime || Date.now()-t.closeTime<2*3600e3));
-  const by = inp.by || "gainers";
-  tk.sort((a,b)=> by==="losers" ? a.priceChangePercent-b.priceChangePercent : by==="volume" ? b.quoteVolume-a.quoteVolume : b.priceChangePercent-a.priceChangePercent);
-  setState(vol,"done"); say(vol,"✓");
-  return tk.slice(0, Math.min(inp.limit ?? 10, 25)).map(t=>({symbol:t.symbol, price:+t.lastPrice, change24h_pct:+(+t.priceChangePercent).toFixed(2), volume24h_usd:Math.round(+t.quoteVolume)}));
+  await goDesk(vol);setState(vol,"work");say(vol,"Top movers…",0);
+  const minV=inp.min_volume_usd??2e6;
+  let tk=(await fetchAllTickers()).filter(t=>t.symbol.endsWith("USDT")&&!t.symbol.includes("_")&&!STABLE.test(t.symbol)&&+t.quoteVolume>=minV&&(!t.closeTime||Date.now()-t.closeTime<2*3600e3));
+  const by=inp.by||"gainers";
+  tk.sort((a,b)=>by==="losers"?a.priceChangePercent-b.priceChangePercent:by==="volume"?b.quoteVolume-a.quoteVolume:b.priceChangePercent-a.priceChangePercent);
+  setState(vol,"done");say(vol,"✓");
+  return tk.slice(0,Math.min(inp.limit??10,25)).map(t=>({symbol:t.symbol,market:t.market,price:+t.lastPrice,change24h_pct:+(+t.priceChangePercent).toFixed(2),volume24h_usd:Math.round(+t.quoteVolume)}));
 }
 
 /* ============ BACKTEST ============ */
-/* Strategy ko historical candles par replay karta hai.
-   Har candle par rules check, agar match hua to agle 20 candles mein
-   target (1:2) pehle aaya (WIN) ya stop pehle aaya (LOSS) ya dono nahi (NEUTRAL). */
-async function backtest(symbol, tf, rules, lookback=100, horizon=20){
-  const k = await klines(symbol, tf);
-  const n = k.length;
-  if(n < lookback + horizon + 30) return {symbol, error:"Not enough history"};
-  const simT = {priceChangePercent: 0, quoteVolume: 1e9}; // placeholder for metrics() signature
-  const start = n - lookback - horizon;
-  let wins=0, losses=0, neutral=0, signals=0;
-  const trades = [];
-  for(let i=start; i<n-horizon; i++){
-    const slice = k.slice(0, i+1); // candles up to and including i
-    const m = metrics(symbol, slice, simT, null);
-    if(!m) continue;
-    const ok = Object.entries(rules).every(([key,val]) => !RULES[key] || RULES[key](m, val));
-    if(!ok) continue;
+async function backtest(symbol,tf,rules,lookback=100,horizon=20,market="futures"){
+  const k=await klines(symbol,tf,market);
+  const n=k.length;
+  if(n<lookback+horizon+30)return{symbol,error:"Not enough history"};
+  const simT={priceChangePercent:0,quoteVolume:1e9,market};
+  const start=n-lookback-horizon;
+  let wins=0,losses=0,neutral=0,signals=0;
+  for(let i=start;i<n-horizon;i++){
+    const slice=k.slice(0,i+1);
+    const m=metrics(symbol,slice,simT,null);
+    if(!m)continue;
+    if(!Object.entries(rules).every(([key,val])=>!RULES[key]||RULES[key](m,val)))continue;
     signals++;
-    const entry = m.price;
-    const stop = m.stop;
-    const target = m.target_1to2;
-    // look at next `horizon` candles (from i+1)
-    let result = "neutral", exitAt = null;
-    for(let j=i+1; j<=i+horizon; j++){
-      const hi = +k[j][2], lo = +k[j][3];
-      const hitTarget = hi >= target;
-      const hitStop = lo <= stop;
-      if(hitTarget && hitStop){ result = "loss"; exitAt = j; break; } // pessimistic: stop first if both same candle
-      if(hitTarget){ result = "win"; exitAt = j; break; }
-      if(hitStop){ result = "loss"; exitAt = j; break; }
+    const entry=m.price,stop=m.stop,target=m.target_1to2;
+    let result="neutral";
+    for(let j=i+1;j<=i+horizon;j++){
+      const hi=+k[j][2],lo=+k[j][3];
+      const hT=hi>=target,hS=lo<=stop;
+      if(hT&&hS){result="loss";break}
+      if(hT){result="win";break}
+      if(hS){result="loss";break}
     }
-    if(result === "win") wins++;
-    else if(result === "loss") losses++;
-    else neutral++;
-    if(trades.length < 3) trades.push({entry, stop, target, result, candlesHeld: exitAt ? exitAt-i : null});
+    if(result==="win")wins++;else if(result==="loss")losses++;else neutral++;
   }
-  const decided = wins + losses;
-  return {symbol, tf, lookback, horizon, signals, wins, losses, neutral,
-    winRate: decided ? +(wins/decided*100).toFixed(1) : null, trades};
+  const dec=wins+losses;
+  return{symbol,tf,lookback,horizon,signals,wins,losses,neutral,winRate:dec?+(wins/dec*100).toFixed(1):null};
 }
 
 /* ============ TEAM DISCUSSION ============ */
-/* Scan ke natije par har bot apni asli observation chat mein post karta hai. */
 async function teamDiscuss(scanResult){
-  const lines = [];
-  const coins = scanResult.results || [];
-  if(!coins.length) return lines;
-
-  // Bilal (Volume)
-  const topVol = [...coins].sort((a,b)=>b.volume_ratio-a.volume_ratio)[0];
-  lines.push({agent: vol, text: `Top volume ratio: <b>${topVol.symbol}</b> ${topVol.volume_ratio}x avg. ${coins.filter(c=>c.volume_ratio>=2).length} coins 2x+ pe.`});
-
-  // Hamza (Trend)
-  const bull = coins.filter(c=>c.ema_stack_bullish).length;
-  const avgRsi = (coins.reduce((a,c)=>a+c.rsi,0)/coins.length).toFixed(1);
-  const bo = coins.filter(c=>c.breakout_20).length;
-  lines.push({agent: trd, text: `${bull}/${coins.length} EMA bullish, avg RSI ${avgRsi}, ${bo} breakout. Best trend: <b>${[...coins].sort((a,b)=>b.score-a.score)[0].symbol}</b>.`});
-
-  // Sara (Risk)
-  const risks = coins.map(c=>c.risk_pct).filter(x=>x!=null);
-  const avgRisk = risks.length ? (risks.reduce((a,b)=>a+b,0)/risks.length).toFixed(2) : "—";
-  const lowRisk = coins.filter(c=>c.risk_pct<=5).length;
-  lines.push({agent: risk, text: `Avg risk ${avgRisk}%. ${lowRisk}/${coins.length} coins 5% se kam risk wale.`});
-
+  const lines=[];const coins=scanResult.results||[];if(!coins.length)return lines;
+  const topVol=[...coins].sort((a,b)=>b.volume_ratio-a.volume_ratio)[0];
+  lines.push({agent:vol,text:`Top volume: <b>${topVol.symbol}</b> ${topVol.volume_ratio}x. ${coins.filter(c=>c.volume_ratio>=2).length} coins 2x+.`});
+  const bull=coins.filter(c=>c.ema_stack_bullish).length;
+  const avgRsi=(coins.reduce((a,c)=>a+c.rsi,0)/coins.length).toFixed(1);
+  lines.push({agent:trd,text:`${bull}/${coins.length} EMA bullish, avg RSI ${avgRsi}.`});
+  const topInflow=[...coins].sort((a,b)=>b.net_inflow_usd-a.net_inflow_usd)[0];
+  lines.push({agent:risk,text:`Top inflow: <b>${topInflow.symbol}</b> +$${(topInflow.net_inflow_usd/1e6).toFixed(2)}M (buy ${(topInflow.net_buy_ratio*100).toFixed(0)}%).`});
+  const whales=coins.filter(c=>c.whale&&c.whale.count>0);
+  if(whales.length){
+    const w=[...whales].sort((a,b)=>(b.whale.net_usd||0)-(a.whale.net_usd||0))[0];
+    const dir=w.whale.net_usd>=0?"buy":"sell";
+    lines.push({agent:vol,text:`🐋 Whale: <b>${w.symbol}</b> ${dir} $${Math.abs(w.whale.net_usd/1e6).toFixed(2)}M (${w.whale.count} large trades).`});
+  }
   return lines;
 }
 function renderTeamLines(lines){
-  if(!lines.length) return "";
-  return '<div style="margin:10px 0;padding:8px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--line)">' +
-    '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:700">💬 TEAM DISCUSSION</div>' +
-    lines.map(l => '<div class="botline"><span class="who">'+esc(l.agent.name)+'</span><span class="what">'+l.text+'</span></div>').join("") +
-    '</div>';
+  if(!lines.length)return"";
+  return'<div class="sect"><h4>💬 TEAM DISCUSSION</h4>'+lines.map(l=>'<div class="botline"><span class="who">'+esc(l.agent.name)+'</span><span class="what">'+l.text+'</span></div>').join("")+'</div>';
 }
 
 /* ============ AI ============ */
-function getModel(){ try { return localStorage.getItem("cbt_model_puter") || ""; } catch { return ""; } }
-document.getElementById("model").value = getModel();
-document.getElementById("model").addEventListener("change", e => {
-  try { localStorage.setItem("cbt_model_puter", e.target.value); } catch {}
-  log("Model: " + (e.target.value || "default"));
-});
+function getModel(){try{return localStorage.getItem("cbt_model_puter")||""}catch{return""}}
+document.getElementById("model").value=getModel();
+document.getElementById("model").addEventListener("change",e=>{try{localStorage.setItem("cbt_model_puter",e.target.value)}catch{}log("Model: "+(e.target.value||"default"))});
 
 function errMsg(e){
-  if(e == null) return "Unknown error";
-  if(typeof e === "string") return e;
-  if(e instanceof Error) return e.message || String(e);
-  if(typeof e.message === "string" && e.message) return e.message;
-  if(e.error){ const inner = errMsg(e.error); if(inner && !/^\[object/.test(inner)) return inner; }
-  if(e.data){ const inner = errMsg(e.data); if(inner && !/^\[object/.test(inner)) return inner; }
-  if(e.response){ const inner = errMsg(e.response); if(inner && !/^\[object/.test(inner)) return inner; }
-  if(e.status) return "HTTP " + e.status + (e.statusText ? " " + e.statusText : "");
-  try { const j = JSON.stringify(e); if(j && j !== "{}") return j; } catch {}
-  const keys = Object.getOwnPropertyNames(e);
-  return "Error (" + ((e.constructor && e.constructor.name) || "object") + ") keys: " + keys.join(", ");
+  if(e==null)return"Unknown error";
+  if(typeof e==="string")return e;
+  if(e instanceof Error)return e.message||String(e);
+  if(typeof e.message==="string"&&e.message)return e.message;
+  if(e.error){const i=errMsg(e.error);if(i&&!/^\[object/.test(i))return i}
+  if(e.data){const i=errMsg(e.data);if(i&&!/^\[object/.test(i))return i}
+  if(e.response){const i=errMsg(e.response);if(i&&!/^\[object/.test(i))return i}
+  if(e.status)return"HTTP "+e.status;
+  try{const j=JSON.stringify(e);if(j&&j!=="{}")return j}catch{}
+  return"Error ("+((e.constructor&&e.constructor.name)||"object")+")";
 }
-function extractText(resp){
-  if(resp == null) return "";
-  if(typeof resp === "string") return resp;
-  if(typeof resp.text === "string") return resp.text;
-  if(typeof resp.result === "string") return resp.result;
-  if(resp.message){
-    const c = resp.message.content;
-    if(typeof c === "string") return c;
-    if(Array.isArray(c)) return c.map(b => (typeof b === "string" ? b : (b.text||""))).join("");
-  }
-  if(resp.content){
-    const c = resp.content;
-    if(typeof c === "string") return c;
-    if(Array.isArray(c)) return c.map(b => (typeof b === "string" ? b : (b.text||""))).join("");
-  }
-  if(Array.isArray(resp)) return resp.map(extractText).join("");
-  log("Ajeeb AI response: " + (()=>{try{return JSON.stringify(resp).slice(0,300)}catch{return typeof resp}})());
-  return "";
+function extractText(r){
+  if(r==null)return"";
+  if(typeof r==="string")return r;
+  if(typeof r.text==="string")return r.text;
+  if(typeof r.result==="string")return r.result;
+  if(r.message){const c=r.message.content;if(typeof c==="string")return c;if(Array.isArray(c))return c.map(b=>typeof b==="string"?b:(b.text||"")).join("")}
+  if(r.content){const c=r.content;if(typeof c==="string")return c;if(Array.isArray(c))return c.map(b=>typeof b==="string"?b:(b.text||"")).join("")}
+  if(Array.isArray(r))return r.map(extractText).join("");
+  return"";
 }
 
-const signInSlot = document.getElementById("signInSlot");
-let signInBtn = null;
+const signInSlot=document.getElementById("signInSlot");
+let signInBtn=null;
 function makeSignInBtn(){
-  signInBtn = document.createElement("button");
-  signInBtn.className = "signin";
-  signInBtn.type = "button";
-  signInBtn.textContent = "🔑 Pehle Sign In karein (ek dafa)";
-  signInBtn.addEventListener("click", async () => {
-    try {
-      log("Sign-in popup khul raha hai…");
-      await puter.auth.signIn();
-      log("✅ Sign in kamyab!");
-      signInBtn.textContent = "✅ Sign in ho gaya — ab hukm bhejein";
-      signInBtn.classList.add("done");
-      signInBtn.disabled = true;
-    } catch(e){
-      const m = errMsg(e);
-      if(/popup_blocked|popup/i.test(m)) log("Popup block. Chrome mein popups allow karein.", true);
-      else if(/auth_window_closed|cancel/i.test(m)) log("Sign-in cancel kiya.", true);
-      else log("Sign in error: " + m, true);
-    }
+  signInBtn=document.createElement("button");signInBtn.className="signin";signInBtn.type="button";
+  signInBtn.textContent="🔑 Pehle Sign In karein (ek dafa)";
+  signInBtn.addEventListener("click",async()=>{
+    try{log("Sign-in popup…");await puter.auth.signIn();log("✅ Sign in kamyab!");signInBtn.textContent="✅ Sign in ho gaya";signInBtn.classList.add("done");signInBtn.disabled=true}
+    catch(e){const m=errMsg(e);if(/popup/i.test(m))log("Popup block. Chrome mein popups allow karein.",true);else if(/cancel/i.test(m))log("Sign-in cancel.",true);else log("Sign in error: "+m,true)}
   });
   signInSlot.appendChild(signInBtn);
 }
 async function checkSignIn(){
-  try {
-    if(typeof puter === "undefined" || !puter.auth){ makeSignInBtn(); return; }
-    if(typeof puter.auth.isSignedIn === "function" && puter.auth.isSignedIn()){
-      const user = (typeof puter.auth.getUser === "function") ? await puter.auth.getUser().catch(()=>null) : null;
-      log("✅ Pehle se signed in" + (user && user.username ? " (" + user.username + ")" : "") + ".");
-      return;
+  try{
+    if(typeof puter==="undefined"||!puter.auth){makeSignInBtn();return}
+    if(typeof puter.auth.isSignedIn==="function"&&puter.auth.isSignedIn()){
+      const u=typeof puter.auth.getUser==="function"?await puter.auth.getUser().catch(()=>null):null;
+      log("✅ Pehle se signed in"+(u&&u.username?" ("+u.username+")":"")+".");return;
     }
     makeSignInBtn();
-  } catch(e){
-    log("Sign-in check: " + errMsg(e), true);
-    makeSignInBtn();
-  }
+  }catch(e){log("Sign-in check: "+errMsg(e),true);makeSignInBtn()}
 }
-setTimeout(checkSignIn, 800);
+setTimeout(checkSignIn,800);
 
-async function aiChat(messages, {json=false} = {}){
-  if(typeof puter === "undefined" || !puter.ai)
-    throw new Error("Puter load nahi hua. Page refresh karein.");
-  if(puter.auth && typeof puter.auth.isSignedIn === "function" && !puter.auth.isSignedIn())
-    throw new Error("Pehle upar wala 🔑 Sign In button dabayein, phir hukm bhejein.");
-
-  const userModel = getModel();
-  const attempts = [];
-  if(userModel) attempts.push({model: userModel});
-  attempts.push({});
-  attempts.push({model: "gpt-4o-mini"});
-
-  let lastErr = null;
+async function aiChat(messages,{json=false}={}){
+  if(typeof puter==="undefined"||!puter.ai)throw new Error("Puter load nahi hua. Refresh karein.");
+  if(puter.auth&&typeof puter.auth.isSignedIn==="function"&&!puter.auth.isSignedIn())
+    throw new Error("Pehle 🔑 Sign In button dabayein.");
+  const um=getModel();const attempts=[];
+  if(um)attempts.push({model:um});attempts.push({});attempts.push({model:"gpt-4o-mini"});
+  let lastErr=null;
   for(const opts of attempts){
-    const o = json ? {...opts, temperature:0.2} : opts;
-    try {
-      log("AI try: " + (o.model || "default"));
-      const resp = await puter.ai.chat(messages, o);
-      const text = extractText(resp);
-      if(text && text.trim()) return text;
-      lastErr = new Error("AI ne khali jawab diya");
-    } catch(e){
-      lastErr = e;
-      const m = errMsg(e);
-      log("AI fail (" + (o.model||"default") + "): " + m, true);
-      if(/sign|auth|login|permission|unauthor/i.test(m))
-        throw new Error("Sign in zaroori. 🔑 button dabayein, phir dobara bhejein.");
-    }
+    const o=json?{...opts,temperature:0.2}:opts;
+    try{log("AI try: "+(o.model||"default"));const r=await puter.ai.chat(messages,o);const t=extractText(r);if(t&&t.trim())return t;lastErr=new Error("khali jawab")}
+    catch(e){lastErr=e;const m=errMsg(e);log("AI fail ("+(o.model||"default")+"): "+m,true);if(/sign|auth|login|unauthor/i.test(m))throw new Error("Sign in zaroori. 🔑 button dabayein.")}
   }
-  throw new Error("AI jawab nahi de saka. Aakhri wajah: " + errMsg(lastErr));
+  throw new Error("AI jawab nahi de saka: "+errMsg(lastErr));
 }
 
-/* ============ CODE-LEVEL GUARDS ============ */
-/* "Pump se pehle" jaisi phrases par AI galat intent chunta hai.
-   Yeh function code-level par force karta hai ke intent=scan rahe
-   aur "already pumped" coins filter ho jayein. */
-function prepumpGuard(text, plan){
-  const t = text.toLowerCase();
-  const isPrepump = /pump\s*se\s*(pehle|phle|pahle|pehlay)|before\s*pump|pre[- ]?pump/i.test(t);
-  const isDip = /\bdip\b|\bsupport\s*ke?\s*paas\b|\bpullback\b|\bretrace\b/i.test(t);
-  const isBreakout = /\bbreakout\b|\bbreak\s*out\b/i.test(t);
-
-  if(isPrepump){
-    return {
-      intent: "scan",
-      timeframe: plan.timeframe || "4h",
-      rules: {
-        ema_stack_bullish: true,
-        volume_ratio_min: 1.3,
-        rsi_min: 45, rsi_max: 68,
-        change24h_min: -5,
-        change24h_max: 15,          // ← "already pumped" filter
-        max_dist_from_ema21_pct: 8, // ← overextended filter
-        ...(plan.rules || {}),
-        // force these to override whatever AI said
-        change24h_max: 15,
-        max_dist_from_ema21_pct: 8
-      },
-      sort_by: "volume_ratio",
-      limit: plan.limit || 5,
-      min_volume_usd: plan.min_volume_usd || 5e6,
-      reasoning_ur: "Pump se pehle: EMA bullish, vol ≥1.3x, RSI 45-68, 24h ≤15%, EMA21 se 8% andar (already-pumped coins filter)"
-    };
-  }
-  if(isDip){
-    return {
-      ...plan,
-      intent: "scan",
-      rules: {
-        price_above_ema: 50,
-        rsi_max: 55,
-        near_20_low_pct: 5,
-        change24h_min: -25,
-        change24h_max: 5,
-        ...(plan.rules || {})
-      },
-      sort_by: "rsi_low",
-      limit: plan.limit || 5
-    };
-  }
-  if(isBreakout){
-    return {
-      ...plan,
-      intent: "scan",
-      rules: {
-        breakout_20: true,
-        volume_ratio_min: 1.5,
-        rsi_min: 50, rsi_max: 78,
-        ...(plan.rules || {})
-      }
-    };
-  }
+function prepumpGuard(text,plan){
+  const t=text.toLowerCase();
+  const isPre=/pump\s*se\s*(pehle|phle|pahle|pehlay)|before\s*pump|pre[- ]?pump/i.test(t);
+  const isDip=/\bdip\b|\bsupport\s*ke?\s*paas\b|\bpullback\b|\bretrace\b/i.test(t);
+  const isBreak=/\bbreakout\b|\bbreak\s*out\b/i.test(t);
+  if(isPre)return{...plan,intent:"scan",timeframe:plan.timeframe||"4h",rules:{ema_stack_bullish:true,volume_ratio_min:1.3,rsi_min:45,rsi_max:68,change24h_max:15,max_dist_from_ema21_pct:8,...(plan.rules||{}),change24h_max:15,max_dist_from_ema21_pct:8},sort_by:"volume_ratio",reasoning_ur:"Pump se pehle: EMA bullish, vol ≥1.3x, RSI 45-68, 24h ≤15%, EMA21 se 8% andar"};
+  if(isDip)return{...plan,intent:"scan",rules:{price_above_ema:50,rsi_max:55,near_20_low_pct:5,change24h_min:-25,change24h_max:5,...(plan.rules||{})},sort_by:"rsi_low"};
+  if(isBreak)return{...plan,intent:"scan",rules:{breakout_20:true,volume_ratio_min:1.5,rsi_min:50,rsi_max:78,...(plan.rules||{})}};
   return plan;
 }
 
-const PLAN_SYSTEM = `You are a crypto screening planner. The user writes in Roman Urdu / English. Output ONLY valid JSON, no prose, no markdown fences.
-
-Schema:
-{
-  "intent": "scan" | "coin" | "movers",
-  "timeframe": "15m"|"1h"|"4h"|"1d"|"1w",
-  "symbol": "BTC" (only if intent=coin),
-  "movers_by": "gainers"|"losers"|"volume" (only if intent=movers),
-  "rules": { ...any subset of rule keys... },
-  "sort_by": "score"|"volume_ratio"|"change24h_pct"|"rsi"|"rsi_low"|"volume24h_usd",
-  "limit": 1-15,
-  "min_volume_usd": number,
-  "reasoning_ur": "ek line Roman Urdu mein"
-}
-
-Rule keys allowed:
-ema_stack_bullish (bool), price_above_ema (9|21|50|100|200), price_below_ema (same), rsi_min, rsi_max, volume_ratio_min, breakout_20 (bool), near_20_high_pct, near_20_low_pct, change24h_min, change24h_max, funding_max_pct, funding_min_pct, hammer (bool), ema_cross_within, max_dist_from_ema21_pct, max_risk_pct.
-
-CRITICAL RULES:
-- "pump se pehle" / "before pump" → intent=scan. NEVER movers. Rules: ema_stack_bullish=true, volume_ratio_min=1.3, rsi_min=45, rsi_max=68, change24h_max=15, max_dist_from_ema21_pct=8. This EXCLUDES already-pumped coins.
-- "support ke paas" / "dip" / "pullback" → near_20_low_pct=3, rsi_max=55, price_above_ema=50.
-- "breakout" → breakout_20=true, volume_ratio_min=1.5.
-- "top gainers" / "top losers" / "volume leaders" → intent=movers.
-- If user names a single coin → intent=coin, symbol=TICKER.
-- Vague ("acha coin do") → intent=scan, rules: ema_stack_bullish=true, volume_ratio_min=1.5, rsi_min=50, rsi_max=70, change24h_max=20.
-- Default timeframe: 4h. Default limit: 5.`;
+const PLAN_SYSTEM=`You are a crypto screening planner. User writes Roman Urdu / English. Output ONLY valid JSON, no prose, no fences.
+Schema: {intent:"scan"|"coin"|"movers",timeframe:"15m"|"1h"|"4h"|"1d"|"1w",symbol:"BTC"(coin only),movers_by:"gainers"|"losers"|"volume"(movers only),rules:{},sort_by:"score"|"volume_ratio"|"change24h_pct"|"rsi"|"rsi_low"|"volume24h_usd"|"net_inflow_usd",limit:1-15,min_volume_usd:number,reasoning_ur:"one line"}
+Rule keys: ema_stack_bullish,price_above_ema(9|21|50|100|200),price_below_ema,rsi_min,rsi_max,volume_ratio_min,breakout_20,near_20_high_pct,near_20_low_pct,change24h_min,change24h_max,funding_max_pct,funding_min_pct,hammer,ema_cross_within,max_dist_from_ema21_pct,max_risk_pct,net_inflow_min_usd,net_buy_ratio_min
+CRITICAL:
+- "pump se pehle" → intent=scan, rules: ema_stack_bullish=true,volume_ratio_min=1.3,rsi_min=45,rsi_max=68,change24h_max=15,max_dist_from_ema21_pct=8
+- "top gainers/losers/volume" → intent=movers
+- single coin name → intent=coin
+- vague ("acha coin do") → scan with ema_stack_bullish=true,volume_ratio_min=1.5,rsi_min=50,rsi_max=70,change24h_max=20
+- Default TF=4h, limit=5, min_volume_usd=2000000`;
 
 async function aiPlan(text){
-  const raw = await aiChat([
-    {role:"system", content:PLAN_SYSTEM},
-    {role:"user", content:text}
-  ], {json:true});
-  const cleaned = raw.replace(/```json|```/g,"").trim();
-  const start = cleaned.indexOf("{"); const end = cleaned.lastIndexOf("}");
-  if(start<0 || end<0) throw new Error("AI ne plan nahi diya.");
-  return JSON.parse(cleaned.slice(start, end+1));
+  const raw=await aiChat([{role:"system",content:PLAN_SYSTEM},{role:"user",content:text}],{json:true});
+  const c=raw.replace(/```json|```/g,"").trim();
+  const s=c.indexOf("{"),e=c.lastIndexOf("}");
+  if(s<0||e<0)throw new Error("AI ne plan nahi diya.");
+  return JSON.parse(c.slice(s,e+1));
 }
 
-const REPORT_SYSTEM = `You are Ayesha, manager of a crypto bot team. User speaks Roman Urdu + English. Write the final answer in simple Roman Urdu.
+const REPORT_SYSTEM=`You are Ayesha, manager of a crypto bot team. User speaks Roman Urdu + English. Write final answer in simple Roman Urdu.
 
-You receive: (a) user request, (b) plan, (c) LIVE scan data with FULL metrics per coin (price, rsi, volume_ratio, ema_stack_bullish, breakout_20, dist_to_20_high_pct, dist_from_20_low_pct, change24h_pct, stop, target_1to2, score), (d) backtest results per top pick (signals, wins, losses, neutral, winRate).
+You receive: user request, plan, LIVE scan (universe size, matched, top coins with FULL metrics: price,rsi,volume_ratio,net_inflow_usd,net_buy_ratio,whale,multiTF,backtest,stop,target), net inflow leaders, whale leaders.
 
 HARD RULES:
-- NEVER invent a coin, price or number. ONLY use data given.
-- DO NOT say "data missing" — every field you need is in the JSON. If a coin lacks a field, skip it and use the next one.
-- Format per coin: '### TICKER (score/100)' then 3-4 '- ' bullets: WHY it qualifies (which rules passed + actual numbers like RSI 58, vol 2.3x, EMA bullish, 24h +6%), stop $X (risk Y%), 1:2 target $Z, and BACKTEST result: "Backtest: N signals, win rate W% (wins/losses/neutral)".
-- If backtest winRate < 40% or signals < 3, warn the user honestly.
-- If matched=0, say so and list rule_pass_counts from the data.
-- Max 320 words. Simple Roman Urdu.
+- NEVER invent numbers. Only use what's in the JSON.
+- Do NOT say "data missing" — every field you need is provided. If a coin lacks a field, skip it and use next.
+- Format: brief 2-line summary of what was done (universe size, timeframe, rules). Then 3-5 coins as "### N. TICKER (score/100)" with bullets: WHY (rules + numbers), Net inflow $X (buy Y%), Whale flow (if any), Multi-TF summary, Stop + 1:2 target, Backtest win rate.
+- If backtest winRate<40% or signals<3, warn honestly.
+- If matched=0, say so and list top rule_pass_counts from data.
+- Max 320 words. Roman Urdu.
 - Finish exactly: "Yeh financial advice nahi hai."`;
 
-async function aiReport(userText, plan, scanResult, higherTF, backtests){
-  const payload = {
-    user_request: userText,
-    plan: plan,
-    scan: {
-      timeframe: scanResult.timeframe,
-      scanned: scanResult.scanned,
-      matched: scanResult.matched,
-      rule_pass_counts: scanResult.rule_pass_counts,
-      coins: scanResult.results.slice(0, 8)
-    },
-    higher_timeframe_confirm: higherTF || null,
-    backtests: backtests || null
-  };
-  const raw = await aiChat([
-    {role:"system", content:REPORT_SYSTEM},
-    {role:"user", content:JSON.stringify(payload)}
-  ]);
-  return raw;
+async function aiReport(text,plan,scan,higherTF){
+  const payload={user_request:text,plan,scan:{
+    timeframe:scan.timeframe,universe:scan.universe,universe_futures:scan.universe_futures,universe_spot:scan.universe_spot,
+    scanned:scan.scanned,matched:scan.matched,rule_pass_counts:scan.rule_pass_counts,
+    coins:(scan.results||[]).slice(0,6).map(c=>({symbol:c.symbol,market:c.market,score:c.score,price:c.price,rsi:c.rsi,volume_ratio:c.volume_ratio,
+      change24h_pct:c.change24h_pct,ema_stack_bullish:c.ema_stack_bullish,breakout_20:c.breakout_20,
+      net_inflow_usd:c.net_inflow_usd,net_buy_ratio:c.net_buy_ratio,whale:c.whale,multiTF:c.multiTF,stop:c.stop,risk_pct:c.risk_pct,target_1to2:c.target_1to2,backtest:c.backtest})),
+    inflow_leaders:(scan.inflow_leaders||[]).slice(0,5).map(c=>({symbol:c.symbol,net_inflow_usd:c.net_inflow_usd,net_buy_ratio:c.net_buy_ratio,market:c.market})),
+    whale_leaders:(scan.whale_leaders||[]).slice(0,5).map(c=>({symbol:c.symbol,whale:c.whale}))
+  },higher_timeframe_confirm:higherTF||null};
+  return await aiChat([{role:"system",content:REPORT_SYSTEM},{role:"user",content:JSON.stringify(payload)}]);
 }
 
-async function confirmHigherTF(picks, currentTf){
-  const higher = {"15m":"4h","1h":"4h","4h":"1d","1d":"1w","1w":null}[currentTf];
-  if(!higher || !picks.length) return null;
-  const out = {};
-  for(const pick of picks.slice(0, 5)){
-    try {
-      const m = await tool_coin({symbol:pick.symbol, timeframe:higher});
-      if(!m.error) out[pick.symbol] = {tf:higher, ema_stack_bullish:m.ema_stack_bullish, rsi:m.rsi, change24h_pct:m.change24h_pct, score:m.score};
-    } catch(e){}
-  }
-  return Object.keys(out).length ? out : null;
+/* ============ REPORT RENDERING ============ */
+function fUSD(x){const a=Math.abs(x);if(a>=1e9)return(x/1e9).toFixed(2)+"B";if(a>=1e6)return(x/1e6).toFixed(2)+"M";if(a>=1e3)return(x/1e3).toFixed(1)+"K";return x.toFixed(0)}
+function fNum(x){return x==null?"—":(+x).toLocaleString("en-US",{maximumFractionDigits:6})}
+function fPct(x){return x==null?"—":(x>=0?"+":"")+(+x).toFixed(2)+"%"}
+
+function renderScanSummary(s){
+  return'<div class="sect"><h4>📊 SCAN SUMMARY</h4>'+
+    `<div style="font-size:13px">Universe: <b>${s.universe}</b> (${s.universe_futures} futures · ${s.universe_spot} spot) · TF: <b>${s.timeframe.toUpperCase()}</b> · Matched: <b>${s.matched}</b></div>`+
+  '</div>';
+}
+function renderInflow(s){
+  const l=s.inflow_leaders||[];if(!l.length)return"";
+  let h='<div class="sect"><h4>💰 TOP NET INFLOW (last 24 candles of TF)</h4><table class="tbl"><tr><th>#</th><th>Coin</th><th>Market</th><th style="text-align:right">Net USD</th><th style="text-align:right">Buy %</th></tr>';
+  l.slice(0,5).forEach((c,i)=>{
+    const cls=c.net_inflow_usd>=0?"up":"dn";
+    h+=`<tr><td>${i+1}</td><td><b>${esc(c.symbol)}</b></td><td><span class="badge ${c.market==="spot"?"sp":"fut"}">${c.market}</span></td><td class="num ${cls}">${c.net_inflow_usd>=0?"+":"-"}$${fUSD(c.net_inflow_usd)}</td><td class="num">${(c.net_buy_ratio*100).toFixed(0)}%</td></tr>`;
+  });
+  return h+'</table></div>';
+}
+function renderWhales(s){
+  const l=s.whale_leaders||[];if(!l.length)return"";
+  let h='<div class="sect"><h4>🐋 WHALE ALERT (large aggTrades)</h4><table class="tbl"><tr><th>Coin</th><th style="text-align:right">Net USD</th><th style="text-align:right">Trades</th></tr>';
+  l.forEach(c=>{
+    const w=c.whale;if(!w)return;
+    const cls=w.net_usd>=0?"up":"dn";
+    h+=`<tr><td><b>${esc(c.symbol)}</b></td><td class="num ${cls}">${w.net_usd>=0?"+":"-"}$${fUSD(w.net_usd)}</td><td class="num">${w.count}</td></tr>`;
+  });
+  return h+'</table></div>';
+}
+function renderPicks(s){
+  const picks=(s.results||[]).slice(0,5);if(!picks.length)return'<div class="sect"><h4>Koi coin match nahi hua</h4>'+(s.rule_pass_counts?Object.entries(s.rule_pass_counts).map(([k,v])=>`<div style="font-size:13px">${esc(k)}: ${v} coins</div>`).join(""):"")+'</div>';
+  let h='<div class="sect"><h4>📈 TOP MATCHES</h4>';
+  picks.forEach((c,i)=>{
+    const mtf=c.multiTF||{};
+    const mtfHtml=["15m","1h","4h","1d","1w"].map(tf=>{
+      const t=mtf[tf];if(!t)return"";
+      const cls=t.error?"":(t.up?"up":"dn");
+      return`<span class="mtf ${cls}">${tf}: ${t.error?"?":t.rsi+(t.up?"↑":"↓")}</span>`;
+    }).join("");
+    const inflowCls=c.net_inflow_usd>=0?"up":"dn";
+    const w=c.whale;
+    h+=`<div style="border:1px solid var(--line);border-radius:6px;padding:8px;margin:6px 0">`+
+      `<div style="font-family:'Pixelify Sans',monospace;font-size:17px;font-weight:600">#${i+1} ${esc(c.symbol)} <span style="font-size:13px;color:var(--muted)">(${c.score}/100)</span> <span class="badge ${c.market==="spot"?"sp":"fut"}">${c.market}</span></div>`+
+      `<div style="font-size:13px;margin:4px 0">$${fNum(c.price)} · ${fPct(c.change24h_pct)} · RSI ${c.rsi} · vol ${c.volume_ratio}x</div>`+
+      `<div style="font-size:13px">Net inflow: <b class="${inflowCls}">${c.net_inflow_usd>=0?"+":"-"}$${fUSD(c.net_inflow_usd)}</b> (buy ${(c.net_buy_ratio*100).toFixed(0)}%)</div>`+
+      (w?`<div style="font-size:13px">🐋 Whale: <b class="${w.net_usd>=0?"up":"dn"}">${w.net_usd>=0?"+":"-"}$${fUSD(w.net_usd)}</b> (${w.count} trades)</div>`:"")+
+      (mtfHtml?`<div style="margin:4px 0">${mtfHtml}</div>`:"")+
+      `<div style="font-size:13px">Stop $${fNum(c.stop)} (${c.risk_pct}%) · Target $${fNum(c.target_1to2)}</div>`+
+      (c.backtest&&!c.backtest.error?`<div class="bt">Backtest: <span class="wr">${c.backtest.winRate!=null?c.backtest.winRate+"%":"—"}</span> <span class="wl">${c.backtest.signals} signals · ${c.backtest.wins}W/${c.backtest.losses}L/${c.backtest.neutral}N</span></div>`:"")+
+    `</div>`;
+  });
+  return h+'</div>';
 }
 
 /* ============ CHAT ============ */
-const chatEl = document.getElementById("chat");
-let history = [];
-function addMsg(role, html){
-  if(chatEl.querySelector(".empty")) chatEl.innerHTML = "";
-  const d = document.createElement("div"); d.className = "msg " + role; d.innerHTML = html;
-  chatEl.appendChild(d); d.scrollIntoView({behavior:"smooth", block:"nearest"}); return d;
-}
+const chatEl=document.getElementById("chat");
+let history=[];
+function addMsg(role,html){if(chatEl.querySelector(".empty"))chatEl.innerHTML="";const d=document.createElement("div");d.className="msg "+role;d.innerHTML=html;chatEl.appendChild(d);d.scrollIntoView({behavior:"smooth",block:"nearest"});return d}
 function chipHtml(rules){
-  const L = {
-    ema_stack_bullish:"EMA bullish", price_above_ema:"price > EMA", price_below_ema:"price < EMA",
-    rsi_min:"RSI ≥", rsi_max:"RSI ≤", volume_ratio_min:"vol ≥", breakout_20:"breakout",
-    near_20_high_pct:"20h ke paas", near_20_low_pct:"support ke paas",
-    change24h_min:"24h ≥", change24h_max:"24h ≤",
-    funding_max_pct:"funding ≤", funding_min_pct:"funding ≥",
-    hammer:"hammer", ema_cross_within:"cross ≤", max_dist_from_ema21_pct:"EMA21 dist ≤", max_risk_pct:"risk ≤"
-  };
-  const U = {rsi_min:"", rsi_max:"", volume_ratio_min:"x", change24h_min:"%", change24h_max:"%",
-    funding_max_pct:"%", funding_min_pct:"%", near_20_high_pct:"%", near_20_low_pct:"%",
-    max_dist_from_ema21_pct:"%", max_risk_pct:"%", ema_cross_within:" c", price_above_ema:"", price_below_ema:""};
-  return Object.entries(rules||{}).map(([k,v]) =>
-    '<span class="tag">' + esc(L[k]||k) + " " + esc(String(v)) + esc(U[k]??"") + "</span>"
-  ).join("");
+  const L={ema_stack_bullish:"EMA bull",price_above_ema:"price>EMA",price_below_ema:"price<EMA",rsi_min:"RSI≥",rsi_max:"RSI≤",volume_ratio_min:"vol≥",breakout_20:"breakout",near_20_high_pct:"20h paas",near_20_low_pct:"support paas",change24h_min:"24h≥",change24h_max:"24h≤",funding_max_pct:"fund≤",funding_min_pct:"fund≥",hammer:"hammer",ema_cross_within:"cross≤",max_dist_from_ema21_pct:"EMA21≤",max_risk_pct:"risk≤",net_inflow_min_usd:"inflow≥",net_buy_ratio_min:"buy≥"};
+  const U={rsi_min:"",rsi_max:"",volume_ratio_min:"x",change24h_min:"%",change24h_max:"%",funding_max_pct:"%",funding_min_pct:"%",near_20_high_pct:"%",near_20_low_pct:"%",max_dist_from_ema21_pct:"%",max_risk_pct:"%",ema_cross_within:"c",net_inflow_min_usd:"$",net_buy_ratio_min:""};
+  return Object.entries(rules||{}).map(([k,v])=>'<span class="tag">'+esc(L[k]||k)+" "+esc(String(v))+esc(U[k]??"")+"</span>").join("");
 }
 
 async function send(text){
-  goBtn.disabled = true; stopBtn.disabled = false; controller = new AbortController(); setProgress(0);
-  addMsg("u", esc(text).replace(/\n/g,"<br>"));
-  const work = addMsg("a", '<p class="empty">Ayesha (AI) hukm parh rahi hai…</p>');
-  AGENTS.forEach(a => setState(a,"idle"));
+  goBtn.disabled=true;stopBtn.disabled=false;controller=new AbortController();setProgress(0);
+  addMsg("u",esc(text).replace(/\n/g,"<br>"));
+  const work=addMsg("a",'<p class="empty">Ayesha hukm parh rahi hai…</p>');
+  AGENTS.forEach(a=>setState(a,"idle"));
+  try{
+    await goDesk(mgr);setState(mgr,"work");say(mgr,"AI plan…",0);
+    work.innerHTML='<div class="think on">🧠 AI plan bana rahi hai…</div>';
+    let plan=await aiPlan(text);
+    const before=JSON.stringify(plan.rules||{});
+    plan=prepumpGuard(text,plan);
+    if(JSON.stringify(plan.rules||{})!==before)log("Guard ne plan theek kiya.");
+    log("AI plan: "+JSON.stringify(plan));
+    if(plan.reasoning_ur)say(mgr,plan.reasoning_ur.slice(0,60),5000);
+    const planChips=chipHtml(plan.rules)+(plan.timeframe?'<span class="tag">TF: '+esc(plan.timeframe.toUpperCase())+'</span>':"")+(plan.intent==="coin"?'<span class="tag">coin: '+esc(plan.symbol||"")+'</span>':"")+(plan.intent==="movers"?'<span class="tag">movers: '+esc(plan.movers_by||"gainers")+'</span>':"");
+    work.innerHTML='<div class="round ok"><b>AI ne samjha:</b> '+esc(plan.reasoning_ur||"plan ready")+'</div>'+(planChips?'<div>'+planChips+'</div>':"")+'<div id="scanSlot"></div>';
 
-  try {
-    await goDesk(mgr); setState(mgr,"work"); say(mgr,"Hukm samajh rahi hoon…",0);
+    const slot=work.querySelector("#scanSlot");
+    let scanResult=null;
+    const minVol=+(document.getElementById("minVol").value||2e6);
+    plan.min_volume_usd=plan.min_volume_usd||minVol;
 
-    /* Step 1: AI plan */
-    work.innerHTML = '<div class="think on">🧠 AI plan bana rahi hai…</div>';
-    let plan = await aiPlan(text);
-    /* Code-level guard: pump se pehle wagerah */
-    const before = JSON.stringify(plan.rules||{});
-    plan = prepumpGuard(text, plan);
-    if(JSON.stringify(plan.rules||{}) !== before){
-      log("Guard ne plan theek kiya: " + JSON.stringify(plan.rules));
-    }
-    log("AI plan: " + JSON.stringify(plan));
-    if(plan.reasoning_ur) say(mgr, plan.reasoning_ur.slice(0,60), 5000);
-
-    const planChips = chipHtml(plan.rules) +
-      (plan.timeframe ? '<span class="tag">TF: '+esc(plan.timeframe.toUpperCase())+'</span>' : '') +
-      (plan.intent==="coin" ? '<span class="tag">coin: '+esc(plan.symbol||"")+'</span>' : '') +
-      (plan.intent==="movers" ? '<span class="tag">movers: '+esc(plan.movers_by||"gainers")+'</span>' : '');
-
-    work.innerHTML =
-      '<div class="round ok"><b>AI ne samjha:</b> ' + esc(plan.reasoning_ur || "plan ready") + '</div>' +
-      (planChips ? '<div>'+planChips+'</div>' : '') +
-      '<div id="scanSlot"></div>';
-
-    /* Step 2: scan */
-    const slot = work.querySelector("#scanSlot");
-    let scanResult, higher = null, backtests = null;
-    if(plan.intent === "coin" && plan.symbol){
-      slot.innerHTML = '<p class="empty">Ek coin check…</p>';
-      const r = await tool_coin({symbol:plan.symbol, timeframe:plan.timeframe || "4h"});
-      if(r.error) throw new Error(r.error);
-      scanResult = {timeframe:r.timeframe, scanned:1, matched:1, rule_pass_counts:{}, results:[r]};
-    } else if(plan.intent === "movers"){
-      slot.innerHTML = '<p class="empty">Top movers…</p>';
-      const list = await tool_movers({by:plan.movers_by||"gainers", limit:plan.limit||8, min_volume_usd:plan.min_volume_usd||5e6});
-      scanResult = {timeframe:plan.timeframe||"4h", scanned:list.length, matched:list.length, rule_pass_counts:{}, results:list, movers:true};
-    } else {
-      slot.innerHTML = '<p class="empty">Scan chal raha hai…</p>';
-      scanResult = await tool_scan({
-        timeframe: plan.timeframe || "4h",
-        rules: plan.rules || {},
-        sort_by: plan.sort_by || "score",
-        limit: Math.max(plan.limit || 5, 8),
-        min_volume_usd: plan.min_volume_usd || 5e6,
-        max_coins: 200
-      });
+    if(plan.intent==="coin"&&plan.symbol){
+      slot.innerHTML='<p class="empty">Ek coin check…</p>';
+      const r=await tool_coin({symbol:plan.symbol,timeframe:plan.timeframe||"4h"});
+      if(r.error)throw new Error(r.error);
+      scanResult={timeframe:r.timeframe,universe:1,universe_futures:r.market==="futures"?1:0,universe_spot:r.market==="spot"?1:0,scanned:1,matched:1,rule_pass_counts:{},results:[r],inflow_leaders:[r],whale_leaders:r.whale?[r]:[]};
+    }else if(plan.intent==="movers"){
+      slot.innerHTML='<p class="empty">Top movers…</p>';
+      const list=await tool_movers({by:plan.movers_by||"gainers",limit:plan.limit||8,min_volume_usd:plan.min_volume_usd});
+      scanResult={timeframe:plan.timeframe||"4h",universe:list.length,universe_futures:0,universe_spot:0,scanned:list.length,matched:list.length,rule_pass_counts:{},results:list,inflow_leaders:[],whale_leaders:[],movers:true};
+    }else{
+      slot.innerHTML='<p class="empty">Full scan chal raha hai (Futures+Spot)…</p>';
+      scanResult=await tool_fullScan(plan);
     }
 
-    /* Step 3: Team discussion — bots apni observation post karte hain */
-    if(scanResult.results && scanResult.results.length){
-      slot.innerHTML += '<div class="think on">💬 Team discuss kar rahi hai…</div>';
+    // Team discussion
+    if(scanResult.results&&scanResult.results.length){
+      slot.innerHTML+='<div class="think on">💬 Team discuss…</div>';
       await sleep(300);
-      const lines = await teamDiscuss(scanResult);
-      slot.innerHTML += renderTeamLines(lines);
-      log("Team discussion ho gayi: " + lines.length + " raaye");
+      const lines=await teamDiscuss(scanResult);
+      slot.innerHTML+=renderTeamLines(lines);
     }
 
-    /* Step 4: higher TF + backtest */
-    if(scanResult.matched > 0 && !scanResult.movers){
-      slot.innerHTML += '<div class="round"><b>Higher timeframe confirm</b> + <b>Backtest</b>…</div>';
-      await goDesk(rank); setState(rank,"work");
-      higher = await confirmHigherTF(scanResult.results.slice(0,5), scanResult.timeframe);
-      backtests = [];
-      for(const pick of scanResult.results.slice(0,3)){
-        try {
-          const bt = await backtest(pick.symbol, scanResult.timeframe, plan.rules || {}, 100, 20);
-          backtests.push(bt);
-          const wr = bt.winRate!=null ? bt.winRate+"%" : "—";
-          log("Backtest " + pick.symbol + ": " + bt.signals + " signals, win " + bt.wins + " / loss " + bt.losses + " / neutral " + bt.neutral + " (WR " + wr + ")");
-          slot.innerHTML += '<div class="bt"><b>Backtest '+esc(pick.symbol)+'</b> ('+scanResult.timeframe.toUpperCase()+', last 100 candles)<br>' +
-            '<span class="wr">'+(bt.winRate!=null ? bt.winRate+'% win rate' : '—')+'</span> ' +
-            '<span class="wl">'+bt.signals+' signals · '+bt.wins+' win · '+bt.losses+' loss · '+bt.neutral+' neutral</span></div>';
-        } catch(e){ log("Backtest fail " + pick.symbol + ": " + errMsg(e), true); }
-      }
-      setState(rank,"done");
+    // Render structured sections
+    if(!scanResult.movers){
+      slot.innerHTML+=renderScanSummary(scanResult);
+      if(scanResult.inflow_leaders&&scanResult.inflow_leaders.length)slot.innerHTML+=renderInflow(scanResult);
+      if(scanResult.whale_leaders&&scanResult.whale_leaders.length)slot.innerHTML+=renderWhales(scanResult);
+      slot.innerHTML+=renderPicks(scanResult);
     }
 
-    /* Step 5: AI report */
-    slot.innerHTML += '<div class="think on">✍️ AI report likh rahi hai…</div>';
-    await goDesk(rank); setState(rank,"work"); say(rank,"Report likh raha hai…",0);
-    const report = await aiReport(text, plan, scanResult, higher, backtests);
+    // AI narrative
+    slot.innerHTML+='<div class="think on">✍️ AI report…</div>';
+    await goDesk(rank);setState(rank,"work");say(rank,"Report…",0);
+    const report=await aiReport(text,plan,scanResult,null);
 
-    work.innerHTML = md(report) + '<p class="small">Live: ' + new Date().toLocaleTimeString() + ', ' + (SRC ? SRC.name : "Binance") + ' • AI: ' + esc(getModel() || "default") + '</p>';
-    setState(rank,"done"); say(rank,"✓"); setState(mgr,"done"); say(mgr,"Ho gaya!",5000);
+    // Prepend AI narrative before structured sections
+    const narrative='<div class="sect"><h4>📝 AI KI RAAYE</h4>'+md(report)+'</div>';
+    work.innerHTML=work.querySelector(".round").outerHTML+
+      (planChips?'<div>'+planChips+'</div>':"")+
+      narrative+
+      slot.outerHTML+
+      '<p class="small">Live: '+new Date().toLocaleTimeString()+' · '+(SRC_FUT||"")+' · AI: '+esc(getModel()||"default")+'</p>';
+
+    setState(rank,"done");say(rank,"✓");setState(mgr,"done");say(mgr,"Ho gaya!",5000);
     log("Jawab tayyar.");
-    history.push({role:"user", content:text});
-    history.push({role:"assistant", content:report});
-
-  } catch(e){
-    if(e.name==="AbortError"){ work.innerHTML = '<p class="empty">Rok diya.</p>'; log("Roka gaya."); }
-    else {
-      const msg = (e && e.message) || errMsg(e);
-      work.innerHTML = '<p class="empty">⚠️ ' + esc(msg) + '</p>' +
-        (/sign|auth|login|puter|🔑/i.test(msg) ? '<p class="small">🔑 Sign In button dabayein, phir dobara bhejein.</p>' : '');
-      log(msg, true);
-    }
-    AGENTS.forEach(a => { if(a.state==="work"||a.state==="walk"){ setState(a,"error"); say(a,"Ruk gaya",4000,true); } });
-  } finally {
-    goBtn.disabled = false; stopBtn.disabled = true; setProgress(1);
-    setTimeout(() => AGENTS.forEach(goHome), 4000);
+    history.push({role:"user",content:text});history.push({role:"assistant",content:report});
+  }catch(e){
+    if(e.name==="AbortError"){work.innerHTML='<p class="empty">Rok diya.</p>';log("Roka gaya.")}
+    else{const m=(e&&e.message)||errMsg(e);work.innerHTML='<p class="empty">⚠️ '+esc(m)+'</p>'+(/sign|auth|login|puter|🔑/i.test(m)?'<p class="small">🔑 Sign In dabayein, phir bhejein.</p>':"");log(m,true)}
+    AGENTS.forEach(a=>{if(a.state==="work"||a.state==="walk"){setState(a,"error");say(a,"Ruk gaya",4000,true)}});
+  }finally{
+    goBtn.disabled=false;stopBtn.disabled=true;setProgress(1);
+    setTimeout(()=>AGENTS.forEach(goHome),4000);
   }
 }
+goBtn.addEventListener("click",()=>{const t=taskEl.value.trim();if(!t){taskEl.focus();return}taskEl.value="";send(t)});
+stopBtn.addEventListener("click",()=>controller&&controller.abort());
+document.getElementById("reset").addEventListener("click",()=>{history=[];chatEl.innerHTML='<p class="empty">Nayi baat.</p>'});
 
-goBtn.addEventListener("click", () => { const t = taskEl.value.trim(); if(!t){ taskEl.focus(); return; } taskEl.value = ""; send(t); });
-stopBtn.addEventListener("click", () => controller && controller.abort());
-document.getElementById("reset").addEventListener("click", () => {
-  history = [];
-  chatEl.innerHTML = '<p class="empty">Nayi baat. Hukm dein.</p>';
-});
-
-[
-  "Pump se pehle wale coins do jisme volume acha ho",
-  "Aaj ke top gainers mein se kaun abhi bhi strong hai?",
-  "4H par fresh EMA 9/21 cross wale coins",
-  "1D par support ke paas hammer candle wale coins do",
-  "BTC kaisa hai?",
-  "Acha coin do jo abhi buy karne layak ho"
-].forEach(q => {
-  const b = document.createElement("button"); b.className = "chip"; b.type = "button"; b.textContent = q;
-  b.addEventListener("click", () => { taskEl.value = q; taskEl.focus(); });
+["Pump se pehle wale coins do jisme volume acha ho",
+ "Konse coins mein net inflow aa raha hai?",
+ "Whales kahan paisa laga rahe hain?",
+ "4H par fresh EMA 9/21 cross wale coins",
+ "Top gainers dikhao",
+ "Acha coin do jo abhi buy karne layak ho"].forEach(q=>{
+  const b=document.createElement("button");b.className="chip";b.type="button";b.textContent=q;
+  b.addEventListener("click",()=>{taskEl.value=q;taskEl.focus()});
   document.getElementById("chips").appendChild(b);
 });
 })();
