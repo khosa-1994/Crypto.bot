@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crypto Bot Team (AI)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://js.puter.com/v2/"></script>
+<style>
+:root{
+  --bg:#EEF0F6; --panel:#FFFFFF; --ink:#1C2033; --muted:#5B6280; --line:#D5D9E6;
+  --lamp:#E9A23B; --screen:#2FB7A8; --up:#2E9E6A; --down:#C9473F; --paper:#FBF7EE;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141726; --panel:#1E2236; --ink:#E8EAF3; --muted:#9AA1BF; --line:#2E3350; --paper:#22263C;
+}}
+:root[data-theme="dark"]{--bg:#141726; --panel:#1E2236; --ink:#E8EAF3; --muted:#9AA1BF; --line:#2E3350; --paper:#22263C;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.5}
+.wrap{max-width:760px;margin:0 auto;padding:14px}
+h1{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size:24px;margin:2px 0 2px;letter-spacing:.5px}
+.sub{color:var(--muted);margin:0 0 12px;font-size:14px}
+.office{position:relative;border-radius:6px;overflow:hidden;border:3px solid #2A2E45;background:#232742}
+canvas{display:block;width:100%;aspect-ratio:192/120;image-rendering:pixelated;image-rendering:crisp-edges}
+.bubble{position:absolute;transform:translate(-50%,-100%);background:#FFFDF6;color:#1C2033;
+  font-family:"Pixelify Sans","Courier New",monospace;font-size:11px;line-height:1.2;padding:3px 6px;border-radius:4px;
+  border:2px solid #1C2033;white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;opacity:0;transition:opacity .2s}
+.bubble.show{opacity:1}
+.bubble.err{background:#FBE3E1}
+.statusbar{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:8px 0 12px;font-size:13px;color:var(--muted)}
+.mode{font-family:"Pixelify Sans","Courier New",monospace;padding:2px 8px;border-radius:3px;border:2px solid var(--line);color:var(--ink)}
+.mode.live{border-color:var(--up)} .mode.offline{border-color:var(--lamp)}
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px;margin-bottom:14px}
+.member{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:7px 9px;display:flex;gap:8px;align-items:center}
+.dot{width:12px;height:12px;border-radius:2px;flex:none}
+.member b{display:block;font-size:14px}
+.member span{font-size:12px;color:var(--muted)}
+.member.work{border-color:var(--screen)} .member.done{border-color:var(--up)} .member.error{border-color:var(--down)}
+.ask{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px}
+label{font-weight:700;font-size:14px;display:block;margin-bottom:6px}
+textarea{width:100%;min-height:70px;resize:vertical;border:1px solid var(--line);border-radius:6px;padding:9px;font:inherit;background:var(--bg);color:var(--ink)}
+textarea:focus-visible,button:focus-visible{outline:3px solid var(--screen);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 10px}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:20px;padding:4px 10px;cursor:pointer}
+.row{display:flex;gap:8px}
+.go{flex:1;font-family:"Pixelify Sans","Courier New",monospace;font-size:17px;border:0;border-radius:6px;padding:11px;background:var(--lamp);color:#1C2033;cursor:pointer}
+.go:disabled{opacity:.5;cursor:not-allowed}
+.stop{font:inherit;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:6px;padding:0 14px;cursor:pointer}
+h2{font-family:"Pixelify Sans","Courier New",monospace;font-weight:600;font-size:18px;margin:18px 0 8px}
+.log{background:#1C2033;color:#CFD5EA;border-radius:6px;padding:10px;font-size:13px;max-height:220px;overflow:auto}
+.log p{margin:0 0 4px} .log .t{color:#7E87AE;margin-right:6px} .log .e{color:#F08B83}
+.empty{color:var(--muted)}
+.prog{height:8px;background:var(--line);border-radius:4px;margin:10px 0 0;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--screen);transition:width .2s}
+.cfg summary{cursor:pointer;font-weight:700}
+.cfg{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.cfg p{font-size:13px;color:var(--muted);margin:4px 0}
+.cfg select{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+.chat{display:flex;flex-direction:column;gap:10px}
+.msg{border-radius:8px;padding:10px 12px;border:1px solid var(--line)}
+.msg.u{background:var(--panel);align-self:flex-end;max-width:90%}
+.msg.a{background:var(--paper)}
+.msg.a h3{font-size:16px;margin:10px 0 4px}
+.msg.a ul{margin:4px 0;padding-left:20px}
+.msg.a p{margin:6px 0}
+.small{font-size:12px;color:var(--muted);margin-top:6px}
+.tag{display:inline-block;font-size:12px;font-family:"Pixelify Sans","Courier New",monospace;
+  background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin:0 4px 4px 0}
+.round{border-left:3px solid var(--line);padding:6px 0 6px 10px;margin:8px 0}
+.round.ok{border-color:var(--up)} .round.warn{border-color:var(--lamp)} .round.bad{border-color:var(--down)}
+.round b{font-family:"Pixelify Sans","Courier New",monospace}
+.think{background:var(--bg);border:1px dashed var(--line);border-radius:6px;padding:8px 10px;margin:6px 0;font-size:13px;color:var(--muted)}
+.think.on{border-color:var(--screen);border-style:solid}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Crypto Bot Team</h1>
+  <p class="sub">Asli AI — koi API key nahi. Pehli dafa Puter account se sign-in (free, 10 second), phir AI hukm samajh kar khud coins deta hai.</p>
+
+  <details class="cfg" id="cfg">
+    <summary>Setup & info</summary>
+    <p><b>AI:</b> Puter.js (free, browser mein chalti hai). Pehli dafa popup aayega — Google ya email se sign-in karein.</p>
+    <label for="model">AI model</label>
+    <select id="model">
+      <option value="">Default (jo Puter de)</option>
+      <option value="gpt-4o-mini">GPT-4o mini (tez, reliable)</option>
+      <option value="gpt-4o">GPT-4o</option>
+      <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+      <option value="claude-sonnet-4">Claude Sonnet 4</option>
+      <option value="deepseek-chat">DeepSeek Chat</option>
+    </select>
+    <p><b>Data:</b> Live Binance se (public endpoints, koi key nahi).</p>
+    <p><b>AI ka kaam:</b> 1) Aap ke hukm se scan plan banata hai. 2) Scan ke natije parh kar Roman Urdu report likhta hai.</p>
+  </details>
+
+  <div class="office" id="office"><canvas id="cv" width="192" height="120"></canvas></div>
+  <div class="statusbar"><span id="counts">5 idle, 0 busy</span><span class="mode" id="mode">Source: check hoga</span></div>
+  <div class="team" id="team"></div>
+
+  <div class="ask">
+    <label for="task">Bots ko hukm dein</label>
+    <textarea id="task" placeholder="Misal: Pump se pehle wale coins do jisme volume acha ho"></textarea>
+    <div class="chips" id="chips"></div>
+    <div class="row">
+      <button class="go" id="go">Hukm bhejo</button>
+      <button class="stop" id="stop" disabled>Roko</button>
+    </div>
+    <div class="prog" aria-hidden="true"><i id="bar"></i></div>
+  </div>
+
+  <h2>Baat cheet</h2>
+  <div class="chat" id="chat"><p class="empty">Hukm dein — AI khud samjhega aur coins dega.</p></div>
+  <p><button class="chip" id="reset" type="button">Nayi baat shuru karein</button></p>
+
+  <h2>Bots ka log</h2>
+  <div class="log" id="log"><p class="empty">Abhi koi kaam nahi chal raha.</p></div>
+</div>
+<script>
+(() => {
+"use strict";
+const W = 192, H = 120;
+const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
+const office = document.getElementById("office");
+
+const AGENTS = [
+  {id:"mgr",  name:"Ayesha", role:"Manager (AI)",       hair:"#2B1A12", shirt:"#C0504D", skin:"#E8B48A", desk:[30,46]},
+  {id:"news", name:"Bilal",  role:"Volume bot",         hair:"#151515", shirt:"#3F7FBF", skin:"#C98E63", desk:[72,46]},
+  {id:"mkt",  name:"Hamza",  role:"Trend bot",          hair:"#5A3A1A", shirt:"#3FA37A", skin:"#D9A273", desk:[114,46]},
+  {id:"risk", name:"Sara",   role:"Risk bot",           hair:"#7A2E1A", shirt:"#8A5FBF", skin:"#EDC19B", desk:[156,46]},
+  {id:"wri",  name:"Usman",  role:"Ranking & report",   hair:"#222222", shirt:"#D99A2B", skin:"#B97D55", desk:[96,92]}
+];
+const rand = (a,b) => a + Math.random()*(b-a);
+function homeSpot(){ return Math.random()<.5 ? [rand(12,56), rand(98,112)] : [rand(136,182), rand(98,112)]; }
+
+AGENTS.forEach(a => {
+  const [hx,hy] = homeSpot();
+  Object.assign(a, {x:hx, y:hy, tx:hx, ty:hy, state:"idle", walkT:0, wait:rand(60,200), arrivers:[], bubbleUntil:0});
+  const b = document.createElement("div"); b.className = "bubble"; office.appendChild(b); a.bubbleEl = b;
+});
+const team = document.getElementById("team");
+AGENTS.forEach(a => {
+  const d = document.createElement("div"); d.className = "member"; d.id = "m-" + a.id;
+  d.innerHTML = `<i class="dot" style="background:${a.shirt}"></i><div><b></b><span></span></div>`;
+  d.querySelector("b").textContent = a.name;
+  d.querySelector("span").textContent = a.role + " (idle)";
+  team.appendChild(d); a.card = d;
+});
+function setState(a, s){
+  a.state = s;
+  a.card.className = "member " + (s==="work"?"work":s==="done"?"done":s==="error"?"error":"");
+  const label = {idle:"idle", walk:"aa raha hai", work:"kaam kar raha hai", done:"mukammal", error:"masla aaya"}[s] || s;
+  a.card.querySelector("span").textContent = a.role + " (" + label + ")";
+  const busy = AGENTS.filter(x => x.state==="work"||x.state==="walk").length;
+  document.getElementById("counts").textContent = (AGENTS.length-busy) + " idle, " + busy + " busy";
+}
+function say(a, text, ms=3500, err=false){
+  a.bubbleEl.textContent = text;
+  a.bubbleEl.classList.toggle("err", err);
+  a.bubbleEl.classList.add("show");
+  a.bubbleUntil = ms ? performance.now()+ms : Infinity;
+}
+function goTo(a, x, y){
+  a.tx = x; a.ty = y; setState(a, "walk");
+  return new Promise(res => a.arrivers.push(res));
+}
+const goDesk = a => goTo(a, a.desk[0], a.desk[1]+9);
+function goHome(a){ const [x,y] = homeSpot(); goTo(a,x,y).then(() => setState(a,"idle")); }
+
+function px(c,x,y,w,h){ ctx.fillStyle=c; ctx.fillRect(Math.round(x),Math.round(y),w,h); }
+let frame = 0;
+function drawRoom(){
+  px("#2A2F48",0,0,W,H);
+  for(let y=26;y<H;y+=8) for(let x=0;x<W;x+=8) if(((x+y)/8)%2===0) px("#2E3350",x,y,8,8);
+  px("#3B4063",0,0,W,26); px("#262A42",0,24,W,2);
+  px("#1A1E33",6,4,30,15); px("#0F1226",8,6,26,11);
+  [[11,8],[20,12],[29,9],[15,14],[26,7]].forEach(([x,y],i)=>{ if((frame>>4)%3!==i%3) px("#F3E9B5",x,y,1,1); });
+  px("#C9CEDD",64,4,52,16); px("#F4F5F9",65,5,50,14);
+  px("#C0504D",68,8,18,1); px("#3F7FBF",68,11,26,1); px("#3FA37A",68,14,14,1);
+  px("#14172A",130,4,52,17);
+  for(let i=0;i<9;i++){
+    const h = 3 + ((i*7 + (frame>>5)) % 8), up = (i + (frame>>6)) % 3 !== 0;
+    px(up?"#2E9E6A":"#C9473F", 134+i*5, 18-h, 3, h);
+  }
+  [[2,28],[184,28]].forEach(([x,y])=>{ px("#8A5A3A",x+1,y+7,5,5); px("#3E8E5A",x,y,7,7); px("#56A872",x+2,y+1,3,3); });
+  px("#3A3352",8,96,52,18); px("#6A4E8A",12,112,44,5); px("#7C5C9E",12,109,44,3);
+  px("#3A3352",132,96,54,18); px("#55596F",178,90,8,10); px("#E9A23B",180,93,4,2);
+  px("#8A6A48",146,102,16,6);
+}
+function drawDesk(a){
+  const [dx,dy] = a.desk, active = a.state==="work";
+  px("#1D2030",dx-5,dy-8,10,7);
+  let scr = "#30364F";
+  if(active) scr = (frame>>3)%2 ? "#2FB7A8" : "#4FD1C5";
+  else if(a.state==="done") scr = "#2E9E6A";
+  else if(a.state==="error") scr = "#C9473F";
+  px(scr,dx-4,dy-7,8,5); px("#1D2030",dx-1,dy-1,2,1);
+  px("#8A6A48",dx-11,dy,22,6); px("#6E5238",dx-11,dy+6,22,1);
+  px("#5B6280",dx-3,dy+9,7,6);
+}
+function drawAgent(a){
+  const x = Math.round(a.x), y = Math.round(a.y), working = a.state==="work"||a.state==="done"||a.state==="error";
+  const moving = Math.hypot(a.tx-a.x, a.ty-a.y) > .5;
+  const step = moving ? ((frame>>3)%2) : 0;
+  const bob = (a.state==="work" && (frame>>2)%2) ? 1 : 0;
+  ctx.fillStyle="rgba(0,0,0,.25)"; ctx.fillRect(x-3,y,7,1);
+  px("#2A2A3A",x-2,y-3+step,2,3); px("#2A2A3A",x+1,y-3+(1-step),2,3);
+  px(a.shirt,x-3,y-8+bob,7,5);
+  px(a.skin,x-2,y-13+bob,5,5);
+  if(working) px(a.hair,x-2,y-13+bob,5,5);
+  else { px(a.hair,x-2,y-13+bob,5,2); px("#1C2033",x-1,y-10+bob,1,1); px("#1C2033",x+1,y-10+bob,1,1); }
+  if(a.state==="done"){ px("#2E9E6A",x+3,y-17,1,1); px("#2E9E6A",x+4,y-16,1,1); px("#2E9E6A",x+5,y-17,1,1); px("#2E9E6A",x+6,y-18,1,1); }
+}
+function tick(now){
+  frame++;
+  AGENTS.forEach(a => {
+    const dx=a.tx-a.x, dy=a.ty-a.y, d=Math.hypot(dx,dy);
+    if(d>.5){ const s=Math.min(.7,d); a.x+=dx/d*s; a.y+=dy/d*s; }
+    else if(a.arrivers.length){ a.x=a.tx; a.y=a.ty; const r=a.arrivers.splice(0); r.forEach(f=>f()); }
+    else if(a.state==="idle" && --a.wait<=0){ const [hx,hy]=homeSpot(); a.tx=hx; a.ty=hy; a.wait=rand(120,320); }
+    if(now > a.bubbleUntil) a.bubbleEl.classList.remove("show");
+    a.bubbleEl.style.left = (a.x/W*100)+"%";
+    a.bubbleEl.style.top = ((a.y-15)/H*100)+"%";
+  });
+  drawRoom();
+  AGENTS.forEach(drawDesk);
+  [...AGENTS].sort((p,q)=>p.y-q.y).forEach(drawAgent);
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* log */
+const logEl = document.getElementById("log");
+function log(msg, err=false){
+  if(logEl.querySelector(".empty")) logEl.innerHTML = "";
+  const p = document.createElement("p"); if(err) p.className = "e";
+  const t = document.createElement("span"); t.className = "t";
+  t.textContent = new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  p.append(t, document.createTextNode(msg)); logEl.appendChild(p); logEl.scrollTop = logEl.scrollHeight;
+}
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function md(text){
+  const lines = esc(text).split("\n"); let html = "", inList = false;
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+  for(const raw of lines){
+    const l = raw.trim();
+    if(/^[-*•]\s+/.test(l)){ if(!inList){html+="<ul>";inList=true;} html+="<li>"+inline(l.replace(/^[-*•]\s+/,""))+"</li>"; continue; }
+    if(inList){ html+="</ul>"; inList=false; }
+    if(!l) continue;
+    if(/^#{1,4}\s/.test(l)) html += "<h3>"+inline(l.replace(/^#{1,4}\s/,""))+"</h3>";
+    else html += "<p>"+inline(l)+"</p>";
+  }
+  if(inList) html += "</ul>";
+  return html;
+}
+
+/* ---------- Binance data (public) ---------- */
+const SOURCES = [
+  {name:"Binance Futures", base:"https://www.binance.com/fapi/v1", futures:true},
+  {name:"Binance Futures", base:"https://fapi.binance.com/fapi/v1", futures:true},
+  {name:"Binance Spot", base:"https://data-api.binance.vision/api/v3", futures:false}
+];
+const STABLE = /^(USDC|FDUSD|TUSD|BUSD|DAI|USDP|USDE|EUR|AEUR|USD1|XUSD|BFUSD|PYUSD|RLUSD|USDS)USDT$/;
+const modeEl = document.getElementById("mode"), bar = document.getElementById("bar");
+const goBtn = document.getElementById("go"), stopBtn = document.getElementById("stop"), taskEl = document.getElementById("task");
+const [mgr, vol, trd, risk, rank] = AGENTS;
+let controller = null, SRC = null, cache = {};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function getJSON(url){
+  const r = await fetch(url, {signal: controller.signal, cache: "no-store"});
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+async function cached(key, ttl, fn){
+  const c = cache[key]; if(c && Date.now()-c.t < ttl) return c.v;
+  const v = await fn(); cache[key] = {t:Date.now(), v}; return v;
+}
+async function source(){
+  if(SRC) return SRC;
+  for(const s of SOURCES){
+    try { await getJSON(s.base + "/ticker/price?symbol=BTCUSDT"); SRC = s; modeEl.textContent = "Live: " + s.name; modeEl.className = "mode live"; return s; }
+    catch(e){ if(e.name==="AbortError") throw e; }
+  }
+  throw new Error("Binance tak rabta nahi ho saka. File ko phone ke Chrome mein kholein.");
+}
+const tickers = async () => { const s = await source(); return cached("tk", 60e3, () => getJSON(s.base + "/ticker/24hr")); };
+const fundingAll = async () => { const s = await source(); if(!s.futures) return {}; try { return await cached("fr", 120e3, async () => { const m = {}; (await getJSON(s.base + "/premiumIndex")).forEach(p => m[p.symbol] = +p.lastFundingRate); return m; }); } catch(e){ if(e.name==="AbortError") throw e; return {}; } };
+const klines = async (sym, tf) => { const s = await source(); return cached("k"+sym+tf, 90e3, () => getJSON(s.base + "/klines?symbol=" + sym + "&interval=" + tf + "&limit=210")); };
+
+function ema(a, p){ const k = 2/(p+1); let e = a[0]; const out = [e]; for(let i=1;i<a.length;i++){ e = a[i]*k + e*(1-k); out.push(e); } return out; }
+function rsi(c, p=14){ let g=0,l=0; for(let i=1;i<=p;i++){ const d=c[i]-c[i-1]; d>0?g+=d:l-=d; } g/=p; l/=p;
+  for(let i=p+1;i<c.length;i++){ const d=c[i]-c[i-1]; g=(g*(p-1)+Math.max(d,0))/p; l=(l*(p-1)+Math.max(-d,0))/p; } return l===0?100:100-100/(1+g/l); }
+const r4 = x => x==null ? null : +(+x).toPrecision(5);
+
+function metrics(sym, k, t, fr){
+  const h=k.map(x=>+x[2]), l=k.map(x=>+x[3]), o=k.map(x=>+x[1]), c=k.map(x=>+x[4]), v=k.map(x=>+x[7]);
+  const n=c.length; if(n<60) return null;
+  const E = p => ema(c,p), e9a=E(9), e21a=E(21);
+  const close=c[n-1], e9=e9a[n-1], e21=e21a[n-1], e50=E(50)[n-1], e100=E(100)[n-1], e200 = n>=200 ? E(200)[n-1] : null;
+  const base=v.slice(n-22,n-2), avgV=base.reduce((a,b)=>a+b,0)/base.length;
+  const vr = avgV ? Math.max(v[n-1],v[n-2])/avgV : 0;
+  const hh=Math.max(...h.slice(n-21,n-1)), ll=Math.min(...l.slice(n-21,n-1));
+  let crossAge=null; for(let i=n-1;i>n-12;i--){ if(e9a[i]>e21a[i] && e9a[i-1]<=e21a[i-1]){ crossAge=n-1-i; break; } }
+  const j=n-2, body=Math.abs(c[j]-o[j]), lw=Math.min(o[j],c[j])-l[j], uw=h[j]-Math.max(o[j],c[j]);
+  const hammer = body>0 && lw>=2*body && uw<=body;
+  const R = rsi(c), chg=+t.priceChangePercent, ext=(close/e21-1)*100;
+  let s=0; if(close>e9)s+=8; if(e9>e21)s+=8; if(e21>e50)s+=8; if(close>e50)s+=6;
+  if(vr>1) s+=Math.min(30,(vr-1)*20); if(close>hh)s+=20; else if(close>=hh*0.98)s+=10;
+  if(R>=50&&R<68)s+=15; else if(R>=68&&R<78)s+=6; else if(R>=78)s-=10; else if(R>=45)s+=5;
+  if(fr!=null&&fr>0.0005)s-=8; if(chg>20)s-=10; if(ext>15)s-=8; s=Math.max(0,Math.min(100,Math.round(s)));
+  const swing=Math.min(...l.slice(n-10)); let stop=Math.min(swing,e21)*0.99; if(stop>=close) stop=close*0.95;
+  return {symbol:sym, score:s, price:r4(close), change24h_pct:+chg.toFixed(2), volume24h_usd:Math.round(+t.quoteVolume),
+    volume_ratio:+vr.toFixed(2), rsi:+R.toFixed(1), ema9:r4(e9), ema21:r4(e21), ema50:r4(e50), ema100:r4(e100), ema200:r4(e200),
+    ema_stack_bullish: close>e9&&e9>e21&&e21>e50, breakout_20: close>hh, dist_to_20_high_pct:+((hh/close-1)*100).toFixed(2),
+    dist_from_20_low_pct:+((close/ll-1)*100).toFixed(2), hammer_last_closed:hammer, candles_since_ema9_cross_up_ema21:crossAge,
+    dist_from_ema21_pct:+ext.toFixed(2), funding_pct: fr==null?null:+(fr*100).toFixed(4),
+    stop:r4(stop), risk_pct:+((close-stop)/close*100).toFixed(2), target_1to2:r4(close+2*(close-stop))};
+}
+const RULES = {
+  ema_stack_bullish:(m,v)=>m.ema_stack_bullish===v,
+  price_above_ema:(m,v)=>m["ema"+v]!=null && m.price>m["ema"+v],
+  price_below_ema:(m,v)=>m["ema"+v]!=null && m.price<m["ema"+v],
+  rsi_min:(m,v)=>m.rsi>=v, rsi_max:(m,v)=>m.rsi<=v,
+  volume_ratio_min:(m,v)=>m.volume_ratio>=v,
+  breakout_20:(m,v)=>m.breakout_20===v,
+  near_20_high_pct:(m,v)=>m.dist_to_20_high_pct<=v && m.dist_to_20_high_pct>=0,
+  near_20_low_pct:(m,v)=>m.dist_from_20_low_pct<=v,
+  change24h_
